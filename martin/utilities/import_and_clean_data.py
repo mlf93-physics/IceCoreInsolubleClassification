@@ -1,0 +1,50 @@
+import pandas as pd
+import torchvision
+import torch
+import pathlib as pl
+import matplotlib.pyplot as plt
+from utilities.constants import *
+
+def get_folder_statistics(folder=None):
+    folder_path = PATH_TO_TRAIN / folder
+    file_list = list(folder_path.glob('*'))
+    num_files = len(file_list)
+    print(f'Number of files in folder "{folder}"', num_files)
+
+def import_csv_file(file_name=None, nrows=None):
+    file_path = PATH_TO_TRAIN / file_name
+    data = pd.read_csv(file_path, nrows=nrows)
+
+    return data
+
+def write_to_csv_file(file_name=None, data_frame=None):
+    file_path = PATH_TO_TRAIN / file_name
+    data_frame.to_csv(file_path, index=False)
+
+def clean_up_imgpaths():
+    files = list(PATH_TO_TRAIN.glob('*.csv'))
+    
+    for file in files:
+        print('File to clean up:', file.name)
+        print('Press enter to continue...')
+        input()
+        data = import_csv_file(file_name=file.name)
+        data['imgpaths'] = data['imgpaths'].str.split('train/').str[1]
+        write_to_csv_file(file_name=file.name, data_frame=data)
+
+def import_img(path=None):
+    image = torchvision.io.read_image(str(PATH_TO_TRAIN / path))
+    return image
+
+def data_loader(folder_name=None, batch_size=4):
+    imagenet_data = torchvision.datasets.ImageNet(PATH_TO_TRAIN / folder_name)
+    data_loader = torch.utils.data.DataLoader(imagenet_data,
+                                            batch_size=batch_size,
+                                            shuffle=True,
+                                            num_workers=args.nThreads)
+    return data_loader
+
+if __name__ == '__main__':
+    print('Starting clean up function. Press enter to continue')
+    input()
+    clean_up_imgpaths()
