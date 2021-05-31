@@ -34,6 +34,7 @@ def clean_up_imgpaths():
 
 def import_img(path=None):
     image = torchvision.io.read_image(str(PATH_TO_TRAIN / path))
+    image.type(torch.DoubleTensor)
     return image
 
 def data_loader(folder_name=None, batch_size=4):
