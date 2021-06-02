@@ -6,13 +6,16 @@ __all__ = [
     'NUM_CLASSES',
     'CLASSES',
     'NUM_WORKERS',
-    'SEED'
+    'SEED',
+    'OUT_PATH'
     ]
 
 import pathlib as pl
 import numpy as np
 
 PATH_TO_TRAIN = pl.Path('F:/Data_IceCoreInsolubleClassification/train/')
+OUT_PATH = pl.Path('C:/Users/Martin/Documents/FysikUNI/Kandidat/AppliedMachineLearning/final_project/trained_cnns')
+
 IMAGE_WIDTH = 256
 IMAGE_HEIGHT = 256
 

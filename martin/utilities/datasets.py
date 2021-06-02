@@ -49,7 +49,7 @@ class ImageDataset(torch.utils.data.Dataset):
         return image, label
 
 def train_val_dataloader_split(size_dataset, val_frac=0.25):
-    indices = range(size_dataset)
+    indices = np.arange(size_dataset)
     split = int(np.floor(val_frac * size_dataset))
 
     np.random.seed(SEED)
