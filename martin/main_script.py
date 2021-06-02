@@ -11,9 +11,6 @@ from utilities.constants import *
 from cnn_setups import TorchNeuralNetwork
 import time
 
-# device = 'cuda' if torch.cuda.is_available() else 'cpu'
-# print('Using {} device'.format(device))
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--cnn_file', type=str, default=None)
 parser.add_argument('--train_path', type=str, default=None)
@@ -48,7 +45,7 @@ def define_dataloader(args):
 
 def run_torch_CNN(train_dataloader=None):
     print('Initialising torch CNN')
-    t_cnn = TorchNeuralNetwork()
+    t_cnn = TorchNeuralNetwork().to(device)
     criterion = t_nn.CrossEntropyLoss()
     optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
 
@@ -58,7 +55,7 @@ def run_torch_CNN(train_dataloader=None):
         running_loss = 0.0
         for i, data in enumerate(train_dataloader, start=0):
             # Extract labels and data
-            input_batch, labels = data
+            input_batch, labels = data[0].to(device), data[1].to(device)
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -121,10 +118,15 @@ def test_validation_on_saved_model(args):
     test_validation(t_cnn, dataloader=val_dataloader)
 
 def main(args):
-    # Get timestamp to save files to unique names
     global time_stamp
+    global device
+
+    # Get timestamp to save files to unique names
     time_stamp = time.gmtime()
     time_stamp = time.strftime("%Y-%m-%d_%H-%M-%S", time_stamp)
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print('Using {} device'.format(device))
 
     print('Running main script')
 
