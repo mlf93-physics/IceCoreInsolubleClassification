@@ -108,16 +108,13 @@ def test_validation(cnn, dataloader=None):
 
         # Get probabilities
         prob = torch.exp(output).cpu().detach().numpy()
-        print('prob shape', prob.shape)
         prob = prob / np.reshape(np.max(prob, axis=1), (-1, 1))
         prob = prob[np.arange(prob.shape[0]), np.argmax(prob, axis=1)]
         probs.extend(prob)
-        print('probs len', len(probs))
-        print('probs', probs)
         # Get predictions
         predictions.extend(list(np.round(prob, 0).astype(np.int)))
 
-    acc = skl_metrics.accuracy_score(val_true, prob)
+    acc = skl_metrics.accuracy_score(val_true, probs)
     print(f'Accuracy score: {acc*100:.2f}%')
         
 
