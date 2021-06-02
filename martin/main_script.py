@@ -105,6 +105,7 @@ def test_validation(cnn, dataloader=None):
 
         # Get probabilities
         prob = torch.exp(output).cpu().detach().numpy()
+        print(prob.shape)
         prob = prob / np.reshape(np.max(prob, axis=1), (-1, 1))
         prob = prob[np.arange(prob.shape[0]), np.argmax(prob, axis=1)]
         probs.extend(prob)
