@@ -11,11 +11,19 @@ from utilities.constants import *
 from cnn_setups import TorchNeuralNetwork
 import time
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--cnn_file', type=str, default=None)
 parser.add_argument('--train_path', type=str, default=None)
 parser.add_argument('--out_path', type=str, default=None)
 parser.add_argument('--n_datapoints', type=int, default=None)
+parser.add_argument('--batch_size', type=int, default=None)
+parser.add_argument('--num_workers', type=int, default=None)
+parser.add_argument('--n_epochs', type=int, default=2)
+parser.add_argument('--val_fraction', type=float, default=0.25)
+parser.add_argument('--n_folds', type=int, default=4)
+
 
 def define_dataloader(args):
     print('Define dataloader')
@@ -30,7 +38,7 @@ def define_dataloader(args):
     # Get sample indices
     train_sampler, val_sampler =\
         utils.train_val_dataloader_split(args.n_datapoints,
-            val_frac=0.25)
+            val_frac=args.val_fraction)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=IMP_BATCH_SIZE, num_workers=NUM_WORKERS,
@@ -43,14 +51,14 @@ def define_dataloader(args):
     return train_dataloader, val_dataloader
     
 
-def run_torch_CNN(train_dataloader=None):
+def run_torch_CNN(args, train_dataloader=None):
     print('Initialising torch CNN')
     t_cnn = TorchNeuralNetwork().to(device)
     criterion = t_nn.CrossEntropyLoss()
     optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
 
     print('Running torch CNN')
-    for epoch in range(2):  # loop over the dataset multiple times
+    for epoch in range(args.n_epochs):  # loop over the dataset multiple times
 
         running_loss = 0.0
         for i, data in enumerate(train_dataloader, start=0):
@@ -75,7 +83,7 @@ def run_torch_CNN(train_dataloader=None):
 
     print('Finished Training. Saving trained network')
 
-    torch.save(t_cnn.state_dict(), OUT_PATH +
+    torch.save(t_cnn.state_dict(), str(OUT_PATH) +
         f'saved_network_{time_stamp}.txt')
 
     return t_cnn
@@ -89,16 +97,16 @@ def test_validation(cnn, dataloader=None):
 
     for _, data in enumerate(dataloader, start=0):
         # Extract labels and data
-        input_batch, labels = data
+        input_batch, labels = data[0].to(device), data[1].to(device)
         # Save validation labels
         val_true.extend(labels.tolist())
         # Predict validation batches
-        output = cnn(input_batch)
+        output = cnn(input_batch).to(device)
 
         # Get probabilities
         prob = torch.exp(output).detach().numpy()
-        prob = prob / np.reshape(np.max(prob, axis=1), (IMP_BATCH_SIZE, 1))
-        prob = prob[np.arange(IMP_BATCH_SIZE), np.argmax(prob, axis=1)]
+        prob = prob / np.reshape(np.max(prob, axis=1), (-1, 1))
+        prob = prob[np.arange(prob.shape[0]), np.argmax(prob, axis=1)]
         probs.extend(prob)
         # Get predictions
         predictions.extend(list(np.round(prob, 0).astype(np.int)))
@@ -119,20 +127,19 @@ def test_validation_on_saved_model(args):
 
 def main(args):
     global time_stamp
-    global device
+    
 
     # Get timestamp to save files to unique names
     time_stamp = time.gmtime()
     time_stamp = time.strftime("%Y-%m-%d_%H-%M-%S", time_stamp)
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print('Using {} device'.format(device))
 
     print('Running main script')
 
     train_dataloader, val_dataloader = define_dataloader(args)
 
-    cnn = run_torch_CNN(train_dataloader=train_dataloader)
+    cnn = run_torch_CNN(args, train_dataloader=train_dataloader)
 
     test_validation(cnn, dataloader=val_dataloader)
 
@@ -150,11 +157,16 @@ def main(args):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    print('Arguments: ', args)
 
     if args.out_path:
         OUT_PATH = args.out_path
     if args.train_path:
         PATH_TO_TRAIN = args.train_path
+    if args.batch_size is not None:
+        IMP_BATCH_SIZE = args.batch_size
+    if args.num_workers is not None:
+        NUM_WORKERS = args.num_workers
 
     if args.cnn_file is not None:
         test_validation_on_saved_model(args)
