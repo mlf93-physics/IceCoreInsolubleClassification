@@ -26,7 +26,7 @@ NUM_CLASSES = 6
 CLASSES = np.array([1, 2, 3, 4, 5, 6])
 
 IMP_BATCH_SIZE = 4
-NUM_WORKERS = 4
+NUM_WORKERS = 2
 
 SEED = 197
 
