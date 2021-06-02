@@ -32,9 +32,9 @@ def clean_up_imgpaths():
         data['imgpaths'] = data['imgpaths'].str.split('train/').str[1]
         write_to_csv_file(file_name=file.name, data_frame=data)
 
-def import_img(path=None):
-    image = torchvision.io.read_image(str(PATH_TO_TRAIN / path))
-    image.type(torch.DoubleTensor)
+def import_img(path):
+    image = torchvision.io.read_image(path)
+    image = image.type(torch.FloatTensor)
     return image
 
 def data_loader(folder_name=None, batch_size=4):

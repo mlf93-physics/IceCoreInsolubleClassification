@@ -7,11 +7,13 @@ __all__ = [
     'CLASSES',
     'NUM_WORKERS',
     'SEED',
-    'OUT_PATH'
+    'OUT_PATH',
+    'TRANSFORM_IMG'
     ]
 
 import pathlib as pl
 import numpy as np
+import torchvision.transforms as tv_transforms
 
 PATH_TO_TRAIN = pl.Path('F:/Data_IceCoreInsolubleClassification/train/')
 OUT_PATH = pl.Path('C:/Users/Martin/Documents/FysikUNI/Kandidat/AppliedMachineLearning/final_project/trained_cnns')
@@ -27,3 +29,9 @@ IMP_BATCH_SIZE = 4
 NUM_WORKERS = 0
 
 SEED = 197
+
+TRANSFORM_IMG = tv_transforms.Compose([
+    tv_transforms.Resize([IMAGE_WIDTH, IMAGE_HEIGHT],
+        interpolation=tv_transforms.InterpolationMode.BILINEAR),
+    tv_transforms.Normalize(mean=[60], std=[30], inplace=True),
+])

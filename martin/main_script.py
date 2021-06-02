@@ -1,6 +1,7 @@
 import argparse
 import matplotlib.pyplot as plt
 import torch
+import torchvision
 import torch.nn as t_nn
 import torch.optim as t_optim
 import sklearn.metrics as skl_metrics
@@ -15,24 +16,30 @@ import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cnn_file', type=str, default=None)
+parser.add_argument('--train_path', type=str, default=None)
+parser.add_argument('--out_path', type=str, default=None)
 parser.add_argument('--n_datapoints', type=int, default=None)
 
 def define_dataloader(args):
     print('Define dataloader')
-    dataset = utils.ImageDataset(file_name='train.csv',
-        root_dir=PATH_TO_TRAIN, transform_enabled=True,
-        n_datapoints=args.n_datapoints)
+    train_dataset = torchvision.datasets.ImageFolder(
+        root=PATH_TO_TRAIN, transform=TRANSFORM_IMG,
+        loader=utils.import_img)
+
+    # train_dataset = utils.ImageDataset(file_name='train.csv',
+    #     root_dir=PATH_TO_TRAIN, transform_enabled=True,
+    #     n_datapoints=args.n_datapoints)
 
     # Get sample indices
     train_sampler, val_sampler =\
-        utils.train_val_dataloader_split(dataset.data_frame.shape[0],
+        utils.train_val_dataloader_split(args.n_datapoints,
             val_frac=0.25)
 
-    train_dataloader = torch.utils.data.DataLoader(dataset,
+    train_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=IMP_BATCH_SIZE, num_workers=NUM_WORKERS,
         sampler=train_sampler)
     
-    val_dataloader = torch.utils.data.DataLoader(dataset,
+    val_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=IMP_BATCH_SIZE, num_workers=NUM_WORKERS,
         sampler=val_sampler)
 
@@ -71,8 +78,8 @@ def run_torch_CNN(train_dataloader=None):
 
     print('Finished Training. Saving trained network')
 
-    torch.save(t_cnn.state_dict(), str(OUT_PATH /
-        f'saved_network_{time_stamp}.txt'))
+    torch.save(t_cnn.state_dict(), OUT_PATH +
+        f'saved_network_{time_stamp}.txt')
 
     return t_cnn
 
@@ -141,6 +148,11 @@ def main(args):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+
+    if args.out_path:
+        OUT_PATH = args.out_path
+    if args.train_path:
+        PATH_TO_TRAIN = args.train_path
 
     if args.cnn_file is not None:
         test_validation_on_saved_model(args)
