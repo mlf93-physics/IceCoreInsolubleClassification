@@ -23,6 +23,7 @@ parser.add_argument('--num_workers', type=int, default=None)
 parser.add_argument('--n_epochs', type=int, default=2)
 parser.add_argument('--val_fraction', type=float, default=0.25)
 parser.add_argument('--n_folds', type=int, default=4)
+parser.add_argument('--save_cnn', action='store_true')
 
 
 def define_dataloader(args):
@@ -81,10 +82,12 @@ def run_torch_CNN(args, train_dataloader=None):
                 (epoch + 1, i + 1, running_loss / 8))
             running_loss = 0.0
 
-    print('Finished Training. Saving trained network')
+    print('Finished Training')
 
-    torch.save(t_cnn.state_dict(), str(OUT_PATH) +
-        f'saved_network_{time_stamp}.txt')
+    if args.save_cnn:
+        print('Saving trained network')
+        torch.save(t_cnn.state_dict(), str(OUT_PATH) +
+            f'saved_network_{time_stamp}.txt')
 
     return t_cnn
 
@@ -105,10 +108,12 @@ def test_validation(cnn, dataloader=None):
 
         # Get probabilities
         prob = torch.exp(output).cpu().detach().numpy()
-        print(prob.shape)
+        print('prob shape', prob.shape)
         prob = prob / np.reshape(np.max(prob, axis=1), (-1, 1))
         prob = prob[np.arange(prob.shape[0]), np.argmax(prob, axis=1)]
         probs.extend(prob)
+        print('probs len', len(probs))
+        print('probs', probs)
         # Get predictions
         predictions.extend(list(np.round(prob, 0).astype(np.int)))
 
