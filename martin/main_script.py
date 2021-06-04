@@ -31,6 +31,9 @@ def define_dataloader(args):
     train_dataset = torchvision.datasets.ImageFolder(
         root=PATH_TO_TRAIN, transform=TRANSFORM_IMG,
         loader=utils.import_img)
+    
+    # image_datasets = {'x': train_dataset}
+    print('train_dataset classes', train_dataset.classes, 'class_to_idx', train_dataset.class_to_idx)
 
     # train_dataset = utils.ImageDataset(file_name='train.csv',
     #     root_dir=PATH_TO_TRAIN, transform_enabled=True,
@@ -108,13 +111,21 @@ def test_validation(cnn, dataloader=None):
 
         # Get probabilities
         prob = torch.exp(output).cpu().detach().numpy()
-        prob = prob / np.reshape(np.max(prob, axis=1), (-1, 1))
-        prob = prob[np.arange(prob.shape[0]), np.argmax(prob, axis=1)]
+        # Normalise
+        prob = prob / np.reshape(np.sum(prob, axis=1), (-1, 1))
+        # Save prediction from max probability
+        index_of_max_prob = np.argmax(prob, axis=1)
+        print('index_of_max_prob', index_of_max_prob)
+        print('prob', prob)
+        predictions.extend(list(index_of_max_prob))
+        # Get max probability
+        prob = prob[np.arange(prob.shape[0]), index_of_max_prob]
         probs.extend(prob)
         # Get predictions
-        predictions.extend(list(np.round(prob, 0).astype(np.int)))
-
-    acc = skl_metrics.accuracy_score(val_true, probs)
+    print('val_true', val_true)
+    print('predictions', predictions)
+    print('probs', probs)
+    acc = skl_metrics.balanced_accuracy_score(val_true, predictions)
     print(f'Accuracy score: {acc*100:.2f}%')
         
 
