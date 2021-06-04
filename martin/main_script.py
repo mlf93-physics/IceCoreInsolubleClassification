@@ -173,9 +173,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print('Arguments: ', args)
 
-    if args.out_path:
+    if args.out_path is not None:
         OUT_PATH = args.out_path
-    if args.train_path:
+    if args.train_path is not None:
         PATH_TO_TRAIN = args.train_path
     if args.batch_size is not None:
         IMP_BATCH_SIZE = args.batch_size

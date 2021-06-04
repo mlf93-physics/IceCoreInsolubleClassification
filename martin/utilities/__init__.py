@@ -4,7 +4,6 @@ from utilities.import_and_clean_data import import_csv_file
 from utilities.import_and_clean_data import write_to_csv_file
 from utilities.import_and_clean_data import import_img
 from utilities.import_and_clean_data import data_loader
-from utilities.import_and_clean_data import PATH_TO_TRAIN
 
 #### plotting ####
 from utilities.plotting import plot_images
