@@ -1,3 +1,4 @@
+import pathlib as pl
 import argparse
 import matplotlib.pyplot as plt
 import torch
@@ -15,13 +16,15 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cnn_file', type=str, default=None)
-parser.add_argument('--train_path', type=str, default=None)
-parser.add_argument('--out_path', type=str, default=None)
-parser.add_argument('--n_datapoints', type=int, default=None)
-parser.add_argument('--batch_size', type=int, default=None)
-parser.add_argument('--num_workers', type=int, default=None)
+parser.add_argument('--train_path', type=str, default=
+    'F:/Data_IceCoreInsolubleClassification/train/')
+parser.add_argument('--out_path', type=str, default=
+    'C:/Users/Martin/Documents/FysikUNI/Kandidat/AppliedMachineLearning/final_project/trained_cnns')
+parser.add_argument('--n_datapoints', type=int, default=100)
+parser.add_argument('--batch_size', type=int, default=4)
+parser.add_argument('--n_threads', type=int, default=0)
 parser.add_argument('--n_epochs', type=int, default=2)
-parser.add_argument('--val_fraction', type=float, default=0.25)
+parser.add_argument('--val_frac', type=float, default=0.25)
 parser.add_argument('--n_folds', type=int, default=4)
 parser.add_argument('--save_cnn', action='store_true')
 
@@ -29,7 +32,7 @@ parser.add_argument('--save_cnn', action='store_true')
 def define_dataloader(args):
     print('Define dataloader')
     train_dataset = torchvision.datasets.ImageFolder(
-        root=PATH_TO_TRAIN, transform=TRANSFORM_IMG,
+        root=args.train_path, transform=TRANSFORM_IMG,
         loader=utils.import_img)
     
     # image_datasets = {'x': train_dataset}
@@ -41,15 +44,14 @@ def define_dataloader(args):
 
     # Get sample indices
     train_sampler, val_sampler =\
-        utils.train_val_dataloader_split(args.n_datapoints,
-            val_frac=args.val_fraction)
+        utils.train_val_dataloader_split(args)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
-        batch_size=IMP_BATCH_SIZE, num_workers=NUM_WORKERS,
+        batch_size=args.batch_size, num_workers=args.n_threads,
         sampler=train_sampler)
     
     val_dataloader = torch.utils.data.DataLoader(train_dataset,
-        batch_size=IMP_BATCH_SIZE, num_workers=NUM_WORKERS,
+        batch_size=args.batch_size, num_workers=args.n_threads,
         sampler=val_sampler)
 
     return train_dataloader, val_dataloader
@@ -89,7 +91,7 @@ def run_torch_CNN(args, train_dataloader=None):
 
     if args.save_cnn:
         print('Saving trained network')
-        torch.save(t_cnn.state_dict(), str(OUT_PATH) +
+        torch.save(t_cnn.state_dict(), pl.Path(args.out_path) /
             f'saved_network_{time_stamp}.txt')
 
     return t_cnn
@@ -164,7 +166,7 @@ def main(args):
     # for _ in range(n_batches):
     #     batch, label = next(iter(train_dataloader))
     #     labels.append(label)
-    #     images.extend([batch[i, :, :, :] for i in range(IMP_BATCH_SIZE)])
+    #     images.extend([batch[i, :, :, :] for i in range(args.batch_size)])
 
     # utils.plot_images(images=images)
         
@@ -173,14 +175,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print('Arguments: ', args)
 
-    if args.out_path is not None:
-        OUT_PATH = args.out_path
-    if args.train_path is not None:
-        PATH_TO_TRAIN = args.train_path
-    if args.batch_size is not None:
-        IMP_BATCH_SIZE = args.batch_size
-    if args.num_workers is not None:
-        NUM_WORKERS = args.num_workers
 
     if args.cnn_file is not None:
         test_validation_on_saved_model(args)
