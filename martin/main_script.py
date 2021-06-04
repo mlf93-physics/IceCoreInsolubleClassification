@@ -35,8 +35,7 @@ def define_dataloader(args):
         root=args.train_path, transform=TRANSFORM_IMG,
         loader=utils.import_img)
     
-    # image_datasets = {'x': train_dataset}
-    print('train_dataset classes', train_dataset.classes, 'class_to_idx', train_dataset.class_to_idx)
+    print('Train classes: ', train_dataset.classes, 'class_to_idx', train_dataset.class_to_idx)
 
     # train_dataset = utils.ImageDataset(file_name='train.csv',
     #     root_dir=PATH_TO_TRAIN, transform_enabled=True,
@@ -82,9 +81,9 @@ def run_torch_CNN(args, train_dataloader=None):
 
             # print statistics
             running_loss += loss.item()
-            # if i % 8 == 7:    # print every 2000 mini-batches
-            print('Epoch: %d, Batch: %5d, Running_loss: %.2e' %
-                (epoch + 1, i + 1, running_loss / 8))
+            if i % 8 == 7:    # print every 2000 mini-batches
+                print('Epoch: %d, Batch: %5d, Running_loss: %.2e' %
+                    (epoch + 1, i + 1, running_loss / 8))
             running_loss = 0.0
 
     print('Finished Training')
@@ -117,16 +116,13 @@ def test_validation(cnn, dataloader=None):
         prob = prob / np.reshape(np.sum(prob, axis=1), (-1, 1))
         # Save prediction from max probability
         index_of_max_prob = np.argmax(prob, axis=1)
-        print('index_of_max_prob', index_of_max_prob)
-        print('prob', prob)
+        # Get predictions
         predictions.extend(list(index_of_max_prob))
         # Get max probability
         prob = prob[np.arange(prob.shape[0]), index_of_max_prob]
         probs.extend(prob)
-        # Get predictions
-    print('val_true', val_true)
-    print('predictions', predictions)
-    print('probs', probs)
+
+    # Get accuracy score
     acc = skl_metrics.balanced_accuracy_score(val_true, predictions)
     print(f'Accuracy score: {acc*100:.2f}%')
         
