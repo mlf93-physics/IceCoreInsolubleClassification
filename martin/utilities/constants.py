@@ -1,5 +1,4 @@
 __all__ = [
-    'PATH_TO_TRAIN',
     'IMAGE_WIDTH',
     'IMAGE_HEIGHT',
     'IMP_BATCH_SIZE',
@@ -7,7 +6,6 @@ __all__ = [
     'CLASSES',
     'NUM_WORKERS',
     'SEED',
-    'OUT_PATH',
     'TRANSFORM_IMG'
     ]
 
@@ -15,8 +13,8 @@ import pathlib as pl
 import numpy as np
 import torchvision.transforms as tv_transforms
 
-PATH_TO_TRAIN = pl.Path('F:/Data_IceCoreInsolubleClassification/train/')
-OUT_PATH = pl.Path('C:/Users/Martin/Documents/FysikUNI/Kandidat/AppliedMachineLearning/final_project/trained_cnns')
+# PATH_TO_TRAIN = pl.Path('F:/Data_IceCoreInsolubleClassification/train/')
+# OUT_PATH = pl.Path('C:/Users/Martin/Documents/FysikUNI/Kandidat/AppliedMachineLearning/final_project/trained_cnns')
 
 IMAGE_WIDTH = 256
 IMAGE_HEIGHT = 256
