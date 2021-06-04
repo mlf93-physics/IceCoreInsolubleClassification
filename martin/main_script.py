@@ -1,3 +1,4 @@
+import pathlib as pl
 import argparse
 import matplotlib.pyplot as plt
 import torch
@@ -15,13 +16,15 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cnn_file', type=str, default=None)
-parser.add_argument('--train_path', type=str, default=None)
-parser.add_argument('--out_path', type=str, default=None)
-parser.add_argument('--n_datapoints', type=int, default=None)
-parser.add_argument('--batch_size', type=int, default=None)
-parser.add_argument('--num_workers', type=int, default=None)
+parser.add_argument('--train_path', type=str, default=
+    'F:/Data_IceCoreInsolubleClassification/train/')
+parser.add_argument('--out_path', type=str, default=
+    'C:/Users/Martin/Documents/FysikUNI/Kandidat/AppliedMachineLearning/final_project/trained_cnns')
+parser.add_argument('--n_datapoints', type=int, default=100)
+parser.add_argument('--batch_size', type=int, default=4)
+parser.add_argument('--n_threads', type=int, default=0)
 parser.add_argument('--n_epochs', type=int, default=2)
-parser.add_argument('--val_fraction', type=float, default=0.25)
+parser.add_argument('--val_frac', type=float, default=0.25)
 parser.add_argument('--n_folds', type=int, default=4)
 parser.add_argument('--save_cnn', action='store_true')
 
@@ -29,8 +32,10 @@ parser.add_argument('--save_cnn', action='store_true')
 def define_dataloader(args):
     print('Define dataloader')
     train_dataset = torchvision.datasets.ImageFolder(
-        root=PATH_TO_TRAIN, transform=TRANSFORM_IMG,
+        root=args.train_path, transform=TRANSFORM_IMG,
         loader=utils.import_img)
+    
+    print('Train classes: ', train_dataset.classes, 'class_to_idx', train_dataset.class_to_idx)
 
     # train_dataset = utils.ImageDataset(file_name='train.csv',
     #     root_dir=PATH_TO_TRAIN, transform_enabled=True,
@@ -38,21 +43,20 @@ def define_dataloader(args):
 
     # Get sample indices
     train_sampler, val_sampler =\
-        utils.train_val_dataloader_split(args.n_datapoints,
-            val_frac=args.val_fraction)
+        utils.train_val_dataloader_split(args)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
-        batch_size=IMP_BATCH_SIZE, num_workers=NUM_WORKERS,
+        batch_size=args.batch_size, num_workers=args.n_threads,
         sampler=train_sampler)
     
     val_dataloader = torch.utils.data.DataLoader(train_dataset,
-        batch_size=IMP_BATCH_SIZE, num_workers=NUM_WORKERS,
+        batch_size=args.batch_size, num_workers=args.n_threads,
         sampler=val_sampler)
 
     return train_dataloader, val_dataloader
     
 
-def run_torch_CNN(args, train_dataloader=None):
+def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
     print('Initialising torch CNN')
     t_cnn = TorchNeuralNetwork().to(device)
     criterion = t_nn.CrossEntropyLoss()
@@ -75,21 +79,22 @@ def run_torch_CNN(args, train_dataloader=None):
             loss.backward()
             optimizer.step()
 
-            # print statistics
-            running_loss += loss.item()
-            # if i % 8 == 7:    # print every 2000 mini-batches
-            print('Epoch: %d, Batch: %5d, Running_loss: %.2e' %
-                (epoch + 1, i + 1, running_loss / 8))
+            # Print statistics
+            # Convert to float to avoid accumulating history (memory)
+            running_loss += float(loss.item())
+            if i % 8 == 7:    # print every 2000 mini-batches
+                print('Epoch: %d, Batch: %5d, Running_loss: %.2e' %
+                    (epoch + 1, i + 1, running_loss / 8))
             running_loss = 0.0
 
     print('Finished Training')
 
     if args.save_cnn:
         print('Saving trained network')
-        torch.save(t_cnn.state_dict(), str(OUT_PATH) +
+        torch.save(t_cnn.state_dict(), pl.Path(args.out_path) /
             f'saved_network_{time_stamp}.txt')
-
-    return t_cnn
+    
+    test_validation(t_cnn, dataloader=val_dataloader)
 
 def test_validation(cnn, dataloader=None):
     print('Get predictions on data')
@@ -108,13 +113,18 @@ def test_validation(cnn, dataloader=None):
 
         # Get probabilities
         prob = torch.exp(output).cpu().detach().numpy()
-        prob = prob / np.reshape(np.max(prob, axis=1), (-1, 1))
-        prob = prob[np.arange(prob.shape[0]), np.argmax(prob, axis=1)]
-        probs.extend(prob)
+        # Normalise
+        prob = prob / np.reshape(np.sum(prob, axis=1), (-1, 1))
+        # Save prediction from max probability
+        index_of_max_prob = np.argmax(prob, axis=1)
         # Get predictions
-        predictions.extend(list(np.round(prob, 0).astype(np.int)))
+        predictions.extend(list(index_of_max_prob))
+        # Get max probability
+        prob = prob[np.arange(prob.shape[0]), index_of_max_prob]
+        probs.extend(prob)
 
-    acc = skl_metrics.accuracy_score(val_true, probs)
+    # Get accuracy score
+    acc = skl_metrics.balanced_accuracy_score(val_true, predictions)
     print(f'Accuracy score: {acc*100:.2f}%')
         
 
@@ -142,34 +152,13 @@ def main(args):
 
     train_dataloader, val_dataloader = define_dataloader(args)
 
-    cnn = run_torch_CNN(args, train_dataloader=train_dataloader)
-
-    test_validation(cnn, dataloader=val_dataloader)
-
-    # n_batches = 1
-
-    # images = []
-    # labels = []
-    # for _ in range(n_batches):
-    #     batch, label = next(iter(train_dataloader))
-    #     labels.append(label)
-    #     images.extend([batch[i, :, :, :] for i in range(IMP_BATCH_SIZE)])
-
-    # utils.plot_images(images=images)
-        
+    run_torch_CNN(args, train_dataloader=train_dataloader,
+        val_dataloader=val_dataloader)
 
 if __name__ == '__main__':
     args = parser.parse_args()
     print('Arguments: ', args)
 
-    if args.out_path:
-        OUT_PATH = args.out_path
-    if args.train_path:
-        PATH_TO_TRAIN = args.train_path
-    if args.batch_size is not None:
-        IMP_BATCH_SIZE = args.batch_size
-    if args.num_workers is not None:
-        NUM_WORKERS = args.num_workers
 
     if args.cnn_file is not None:
         test_validation_on_saved_model(args)

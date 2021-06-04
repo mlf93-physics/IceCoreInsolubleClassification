@@ -48,16 +48,21 @@ class ImageDataset(torch.utils.data.Dataset):
 
         return image, label
 
-def train_val_dataloader_split(size_dataset, val_frac=0.25):
-    indices = np.arange(size_dataset)
-    split = int(np.floor(val_frac * size_dataset))
+def train_val_dataloader_split(args):
+    # Get size of dataset
+    data_frame = utils.import_csv_file(args, file_name='train.csv')
+    size_dataset = data_frame.shape[0]
 
+    # Prepare indices for sampler
     np.random.seed(SEED)
-    np.random.shuffle(indices)
+    indices = np.random.randint(0, size_dataset, args.n_datapoints)
+    split = int(np.floor(args.val_frac * args.n_datapoints))
 
+    # Split dataset
     train_indices = indices[split:]
     val_indices = indices[:split]
 
+    # Define train and validation samplers
     train_sampler = t_data_sampler.SubsetRandomSampler(train_indices)
     val_sampler = t_data_sampler.SubsetRandomSampler(val_indices)
 

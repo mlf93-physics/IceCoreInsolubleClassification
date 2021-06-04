@@ -18,9 +18,8 @@ class TorchNeuralNetwork(t_nn.Module):
         self.pool = t_nn.MaxPool2d(2, stride=1)
         
         self.fc1 = t_nn.Linear(32*(IMAGE_WIDTH - n_layers*kernel_size)*
-            (IMAGE_HEIGHT - n_layers*kernel_size), 120)
-        self.fc2 = t_nn.Linear(120, 60)
-        self.fc3 = t_nn.Linear(60, NUM_CLASSES)
+            (IMAGE_HEIGHT - n_layers*kernel_size), 60)
+        self.fc2 = t_nn.Linear(60, NUM_CLASSES)
 
     def forward(self, x):
         # Apply each layer to the input image x
@@ -30,6 +29,5 @@ class TorchNeuralNetwork(t_nn.Module):
         
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         x = t_functional.relu(self.fc1(x))
-        x = t_functional.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.fc2(x)
         return x
