@@ -11,13 +11,13 @@ class TorchNeuralNetwork(t_nn.Module):
         n_layers = 3
 
         # Define the components of the CNN
-        self.conv1 = t_nn.Conv2d(1, 8, kernel_size)
-        self.conv2 = t_nn.Conv2d(8, 16, kernel_size)
-        self.conv3 = t_nn.Conv2d(16, 32, kernel_size)
+        self.conv1 = t_nn.Conv2d(1, 16, kernel_size)
+        self.conv2 = t_nn.Conv2d(16, 32, kernel_size)
+        self.conv3 = t_nn.Conv2d(32, 64, kernel_size)
 
         self.pool = t_nn.MaxPool2d(2, stride=1)
         
-        self.fc1 = t_nn.Linear(32*(IMAGE_WIDTH - n_layers*kernel_size)*
+        self.fc1 = t_nn.Linear(64*(IMAGE_WIDTH - n_layers*kernel_size)*
             (IMAGE_HEIGHT - n_layers*kernel_size), 120)
         self.fc2 = t_nn.Linear(120, 60)
         self.fc3 = t_nn.Linear(60, NUM_CLASSES)
