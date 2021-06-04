@@ -56,7 +56,7 @@ def define_dataloader(args):
     return train_dataloader, val_dataloader
     
 
-def run_torch_CNN(args, train_dataloader=None):
+def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
     print('Initialising torch CNN')
     t_cnn = TorchNeuralNetwork().to(device)
     criterion = t_nn.CrossEntropyLoss()
@@ -79,8 +79,9 @@ def run_torch_CNN(args, train_dataloader=None):
             loss.backward()
             optimizer.step()
 
-            # print statistics
-            running_loss += loss.item()
+            # Print statistics
+            # Convert to float to avoid accumulating history (memory)
+            running_loss += float(loss.item())
             if i % 8 == 7:    # print every 2000 mini-batches
                 print('Epoch: %d, Batch: %5d, Running_loss: %.2e' %
                     (epoch + 1, i + 1, running_loss / 8))
@@ -92,8 +93,8 @@ def run_torch_CNN(args, train_dataloader=None):
         print('Saving trained network')
         torch.save(t_cnn.state_dict(), pl.Path(args.out_path) /
             f'saved_network_{time_stamp}.txt')
-
-    return t_cnn
+    
+    test_validation(t_cnn, dataloader=val_dataloader)
 
 def test_validation(cnn, dataloader=None):
     print('Get predictions on data')
@@ -151,21 +152,8 @@ def main(args):
 
     train_dataloader, val_dataloader = define_dataloader(args)
 
-    cnn = run_torch_CNN(args, train_dataloader=train_dataloader)
-
-    test_validation(cnn, dataloader=val_dataloader)
-
-    # n_batches = 1
-
-    # images = []
-    # labels = []
-    # for _ in range(n_batches):
-    #     batch, label = next(iter(train_dataloader))
-    #     labels.append(label)
-    #     images.extend([batch[i, :, :, :] for i in range(args.batch_size)])
-
-    # utils.plot_images(images=images)
-        
+    run_torch_CNN(args, train_dataloader=train_dataloader,
+        val_dataloader=val_dataloader)
 
 if __name__ == '__main__':
     args = parser.parse_args()
