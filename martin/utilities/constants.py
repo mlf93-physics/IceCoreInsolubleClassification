@@ -4,7 +4,8 @@ __all__ = [
     'NUM_CLASSES',
     'CLASSES',
     'SEED',
-    'TRANSFORM_IMG'
+    'TRAIN_TRANSFORM',
+    'VAL_TRANSFORM'
     ]
 
 import pathlib as pl
@@ -20,8 +21,20 @@ CLASSES = np.array([1, 2, 3, 4, 5, 6])
 
 SEED = 197
 
-TRANSFORM_IMG = tv_transforms.Compose([
+TRAIN_TRANSFORM = tv_transforms.Compose([
+    tv_transforms.RandomCrop(80, pad_if_needed=True),
     tv_transforms.Resize([IMAGE_WIDTH, IMAGE_HEIGHT],
         interpolation=tv_transforms.InterpolationMode.BILINEAR),
     tv_transforms.Normalize(mean=[60], std=[30], inplace=True),
+    tv_transforms.RandomHorizontalFlip(),
+    tv_transforms.GaussianBlur(5),
+])
+
+VAL_TRANSFORM = tv_transforms.Compose([
+    tv_transforms.RandomCrop(80, pad_if_needed=True),
+    tv_transforms.Resize([IMAGE_WIDTH, IMAGE_HEIGHT],
+        interpolation=tv_transforms.InterpolationMode.BILINEAR),
+    tv_transforms.Normalize(mean=[60], std=[30], inplace=True),
+    tv_transforms.RandomHorizontalFlip(),
+    tv_transforms.GaussianBlur(5),
 ])
