@@ -12,7 +12,10 @@ from utilities.constants import *
 from cnn_setups import TorchNeuralNetwork
 import time
 
+# Get device
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# Set seed
+torch.manual_seed(SEED)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cnn_file', type=str, default=None)
@@ -34,16 +37,13 @@ def define_dataloader(args):
     train_dataset = torchvision.datasets.ImageFolder(
         root=args.train_path, transform=TRANSFORM_IMG,
         loader=utils.import_img)
-    
-    print('Train classes: ', train_dataset.classes, 'class_to_idx', train_dataset.class_to_idx)
 
-    # train_dataset = utils.ImageDataset(file_name='train.csv',
-    #     root_dir=PATH_TO_TRAIN, transform_enabled=True,
-    #     n_datapoints=args.n_datapoints)
 
     # Get sample indices
+    # train_sampler, val_sampler =\
+    #     utils.train_val_dataloader_split_random_subset(args)
     train_sampler, val_sampler =\
-        utils.train_val_dataloader_split(args)
+        utils.train_val_dataloader_split_weighted_subset(train_dataset, args)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=args.batch_size, num_workers=args.n_threads,
