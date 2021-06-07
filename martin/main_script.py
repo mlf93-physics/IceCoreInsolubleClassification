@@ -12,7 +12,10 @@ from utilities.constants import *
 from cnn_setups import TorchNeuralNetwork
 import time
 
+# Get device
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# Set seed
+torch.manual_seed(SEED)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cnn_file', type=str, default=None)

@@ -72,15 +72,16 @@ def train_val_dataloader_split_random_subset(args):
 def train_val_dataloader_split_weighted_subset(train_dataset, args, num_classes=6):
     class_sample_counts = torch.unique(torch.FloatTensor(train_dataset.targets),
         return_counts=True)[1]
-
+    
     weights = 1. / class_sample_counts
     samples_weights = weights[train_dataset.targets]
 
     if args.n_datapoints < 0:
-        num_samples = class_sample_counts.sum()
+        num_samples = torch.min(class_sample_counts).item()*\
+            class_sample_counts.size()[0]
     else:
         num_samples = args.n_datapoints
-
+    
     sampler = t_data.WeightedRandomSampler(
         weights=samples_weights,
         num_samples=num_samples,
