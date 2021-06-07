@@ -10,7 +10,6 @@ import numpy as np
 import utilities as utils
 from utilities.constants import *
 from cnn_setups import TorchNeuralNetwork
-import time
 
 # Get device
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -38,6 +37,8 @@ def define_dataloader(args):
         root=args.train_path, transform=TRAIN_TRANSFORM,
         loader=utils.import_img)
 
+    print('Train classes: ', train_dataset.classes, 'class_to_idx',
+        train_dataset.class_to_idx)
 
     # Get sample indices
     # train_sampler, val_sampler =\
@@ -63,6 +64,8 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
     optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
 
     print('Running torch CNN')
+    loss_list = []
+    loss_index_list = []
     for epoch in range(args.n_epochs):  # loop over the dataset multiple times
 
         running_loss = 0.0
@@ -81,10 +84,14 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
 
             # Print statistics
             # Convert to float to avoid accumulating history (memory)
+            step = 8
             running_loss += float(loss.item())
-            if i % 8 == 7:    # print every 2000 mini-batches
+            if i % step == step - 1:    # print every 2000 mini-batches
                 print('Epoch: %d, Batch: %5d, Running_loss: %.2e' %
-                    (epoch + 1, i + 1, running_loss / 8))
+                    (epoch + 1, i + 1, running_loss / step))
+            
+            loss_list.append(running_loss)
+            loss_index_list.append((epoch + 1)*(i + 1))
             running_loss = 0.0
 
     print('Finished Training')
@@ -92,9 +99,14 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
     if args.save_cnn:
         print('Saving trained network')
         torch.save(t_cnn.state_dict(), pl.Path(args.out_path) /
-            f'saved_network_{time_stamp}.txt')
+            f'saved_network_{TIME_STAMP}.txt')
+    
+    utils.save_history_array(args, loss_index_list, loss_list, history_name='loss')
+    utils.plot_history_array(loss_index_list, loss_list)
     
     test_validation(t_cnn, dataloader=val_dataloader)
+
+    
 
 def test_validation(cnn, dataloader=None):
     print('Get predictions on data')
@@ -139,13 +151,6 @@ def test_validation_on_saved_model(args):
     test_validation(t_cnn, dataloader=val_dataloader)
 
 def main(args):
-    global time_stamp
-    
-
-    # Get timestamp to save files to unique names
-    time_stamp = time.gmtime()
-    time_stamp = time.strftime("%Y-%m-%d_%H-%M-%S", time_stamp)
-
     print('Using {} device'.format(device))
 
     print('Running main script')
@@ -165,4 +170,5 @@ if __name__ == '__main__':
     else:
         main(args)
 
+    plt.tight_layout()
     plt.show()

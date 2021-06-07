@@ -5,12 +5,17 @@ __all__ = [
     'CLASSES',
     'SEED',
     'TRAIN_TRANSFORM',
-    'VAL_TRANSFORM'
+    'VAL_TRANSFORM',
+    'TIME_STAMP'
     ]
 
-import pathlib as pl
+import time
 import numpy as np
 import torchvision.transforms as tv_transforms
+
+# Get timestamp to save files to unique names
+TIME_STAMP = time.gmtime()
+TIME_STAMP = time.strftime("%Y-%m-%d_%H-%M-%S", TIME_STAMP)
 
 IMAGE_WIDTH = 256
 IMAGE_HEIGHT = 256
