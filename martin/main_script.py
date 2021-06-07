@@ -35,23 +35,23 @@ parser.add_argument('--save_cnn', action='store_true')
 def define_dataloader(args):
     print('Define dataloader')
     train_dataset = torchvision.datasets.ImageFolder(
-        root=args.train_path, transform=TRANSFORM_IMG,
+        root=args.train_path, transform=TRAIN_TRANSFORM,
         loader=utils.import_img)
 
 
     # Get sample indices
     # train_sampler, val_sampler =\
     #     utils.train_val_dataloader_split_random_subset(args)
-    train_sampler, val_sampler =\
+    train_indices, val_indices =\
         utils.train_val_dataloader_split_weighted_subset(train_dataset, args)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=args.batch_size, num_workers=args.n_threads,
-        sampler=train_sampler)
+        sampler=train_indices)
     
     val_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=args.batch_size, num_workers=args.n_threads,
-        sampler=val_sampler)
+        sampler=val_indices)
 
     return train_dataloader, val_dataloader
     

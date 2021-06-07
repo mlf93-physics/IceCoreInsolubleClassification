@@ -69,6 +69,33 @@ def train_val_dataloader_split_random_subset(args):
 
     return train_sampler, val_sampler
 
+# class MapDataset(torch.utils.data.Dataset):
+#     """
+#     Given a dataset, creates a dataset which applies a mapping function
+#     to its items (lazily, only when an item is called).
+
+#     Note that data is not cloned/copied from the initial dataset.
+#     """
+
+#     def __init__(self, dataset, map_fn):
+#         self.dataset = dataset
+#         self.map = map_fn
+
+#     def __getitem__(self, index):
+#         print(self.dataset)
+#         # print('index', index)
+#         # print('self.dataset[index]', self.dataset[index])
+#         if self.map:     
+#             image = self.map(self.dataset[index][0]) 
+#         else:     
+#             image = self.dataset[index][0]
+
+#         label = self.dataset[index][1]      
+#         return image, label
+
+#     def __len__(self):
+#         return len(self.dataset)
+
 def train_val_dataloader_split_weighted_subset(train_dataset, args, num_classes=6):
     class_sample_counts = torch.unique(torch.FloatTensor(train_dataset.targets),
         return_counts=True)[1]
@@ -95,8 +122,7 @@ def train_val_dataloader_split_weighted_subset(train_dataset, args, num_classes=
     train_indices = indices[split:]
     val_indices = indices[:split]
 
-    # Define train and validation samplers
-    train_sampler = t_data_sampler.SubsetRandomSampler(train_indices)
-    val_sampler = t_data_sampler.SubsetRandomSampler(val_indices)
+    # train_subdataset = t_data.Subset(train_indices, train_indices)
+    # val_subdataset = t_data.Subset(train_indices, val_indices)
 
-    return train_sampler, val_sampler
+    return train_indices, val_indices
