@@ -10,4 +10,7 @@ def plot_images(images=None, labels=None):
     print(f'Plotting {len_images} images')
     sb_img.ImageGrid(images, cmap='Greys_r', col_wrap=5)
 
-
+def plot_history_array(history_indices, history, xlabel='Batches', ylabel='Loss'):
+    plt.plot(history_indices, history)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
