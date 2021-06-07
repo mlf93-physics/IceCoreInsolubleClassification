@@ -33,36 +33,50 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
     optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
 
     print('Running torch CNN')
-    loss_list = []
-    loss_index_list = []
+    train_loss_list = []
+    train_loss_index_list = []
+    val_loss_list = []
+    val_loss_index_list = []
     for epoch in range(args.n_epochs):  # loop over the dataset multiple times
 
-        running_loss = 0.0
+        # Set model in train mode
+        t_cnn.train()
+
+        running_train_loss = 0.0
         for i, data in enumerate(train_dataloader, start=0):
             # Extract labels and data
             input_batch, labels = data[0].to(DEVICE), data[1].to(DEVICE)
-
+            print('labels', type(labels), labels.shape)
+            print('labels', labels)
             # zero the parameter gradients
             optimizer.zero_grad()
 
             # forward + backward + optimize
             outputs = t_cnn(input_batch)
-            loss = criterion(outputs, labels)
-            loss.backward()
+            train_loss = criterion(outputs, labels)
+            train_loss.backward()
             optimizer.step()
 
             # Print statistics
             # Convert to float to avoid accumulating history (memory)
             step = 8
-            running_loss += float(loss.item())
+            running_train_loss += float(train_loss.item())
             if i % step == step - 1:    # print every 2000 mini-batches
-                print('Epoch: %d, Batch: %5d, Running_loss: %.2e' %
-                    (epoch + 1, i + 1, running_loss / step))
+                print('Epoch: %d, Batch: %5d, Running_train_loss: %.2e' %
+                    (epoch + 1, i + 1, running_train_loss / step))
             
-            loss_list.append(running_loss)
-            loss_index_list.append((epoch + 1)*(i + 1))
-            running_loss = 0.0
+            train_loss_list.append(running_train_loss)
+            train_loss_index_list.append((epoch + 1)*(i + 1))
+            running_train_loss = 0.0
 
+        # Disable gradient computations and set model into evaluation mode
+        t_cnn.eval()
+        with torch.no_grad():
+            # Predict on validation set
+            output, truth = test.test_cnn(t_cnn, dataloader=val_dataloader)
+        val_loss = criterion(output, truth)
+        val_loss_list.append(val_loss)
+        val_loss_index_list.append((epoch + 1)*(i + 1))
 
     print('Finished Training')
 
@@ -71,10 +85,11 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
         torch.save(t_cnn.state_dict(), pl.Path(args.out_path) /
             f'saved_network_{TIME_STAMP}.txt')
     
-    utils.save_history_array(args, loss_index_list, loss_list, history_name='loss')
-    utils.plot_history_array(loss_index_list, loss_list)
+    utils.save_history_array(args, train_loss_index_list, train_loss_list, history_name='train_loss')
+    utils.save_history_array(args, val_loss_index_list, val_loss_list, history_name='val_loss')
+    utils.plot_history_array(train_loss_index_list, train_loss_list)
+    utils.plot_history_array(val_loss_index_list, val_loss_list)
     
-    test.test_validation(t_cnn, dataloader=val_dataloader)
 
 def main(args):
     print('Using {} device'.format(DEVICE))
