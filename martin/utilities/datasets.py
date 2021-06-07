@@ -3,6 +3,7 @@ import torch
 import torchvision
 import torchvision.transforms as tv_transforms
 import torch.utils.data.sampler as t_data_sampler
+import torch.utils.data as t_data
 import utilities as utils
 from utilities.constants import *
 
@@ -48,7 +49,7 @@ class ImageDataset(torch.utils.data.Dataset):
 
         return image, label
 
-def train_val_dataloader_split(args):
+def train_val_dataloader_split_random_subset(args):
     # Get size of dataset
     data_frame = utils.import_csv_file(args, file_name='train.csv')
     size_dataset = data_frame.shape[0]
@@ -58,6 +59,37 @@ def train_val_dataloader_split(args):
     indices = np.random.randint(0, size_dataset, args.n_datapoints)
     split = int(np.floor(args.val_frac * args.n_datapoints))
 
+    # Split dataset
+    train_indices = indices[split:]
+    val_indices = indices[:split]
+
+    # Define train and validation samplers
+    train_sampler = t_data_sampler.SubsetRandomSampler(train_indices)
+    val_sampler = t_data_sampler.SubsetRandomSampler(val_indices)
+
+    return train_sampler, val_sampler
+
+def train_val_dataloader_split_weighted_subset(train_dataset, args, num_classes=6):
+    class_sample_counts = torch.unique(torch.FloatTensor(train_dataset.targets),
+        return_counts=True)[1]
+
+    weights = 1. / class_sample_counts
+    samples_weights = weights[train_dataset.targets]
+
+    if args.n_datapoints < 0:
+        num_samples = class_sample_counts.sum()
+    else:
+        num_samples = args.n_datapoints
+
+    sampler = t_data.WeightedRandomSampler(
+        weights=samples_weights,
+        num_samples=num_samples,
+        replacement=False)
+
+    indices = list(sampler)
+
+    # Find split
+    split = int(np.floor(args.val_frac * num_samples))
     # Split dataset
     train_indices = indices[split:]
     val_indices = indices[:split]
