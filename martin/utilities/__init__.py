@@ -13,8 +13,7 @@ from utilities.constants import *
 
 #### constants ####
 from utilities.datasets import ImageDataset,\
-    train_val_dataloader_split_random_subset,\
-    train_val_dataloader_split_weighted_subset
+    define_dataloader
 
 #### save functions ####
 from utilities.save_functions import save_history_array

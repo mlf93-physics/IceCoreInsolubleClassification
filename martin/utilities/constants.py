@@ -1,4 +1,5 @@
 __all__ = [
+    'DEVICE',
     'IMAGE_WIDTH',
     'IMAGE_HEIGHT',
     'NUM_CLASSES',
@@ -11,7 +12,11 @@ __all__ = [
 
 import time
 import numpy as np
+import torch
 import torchvision.transforms as tv_transforms
+
+# Get device
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # Get timestamp to save files to unique names
 TIME_STAMP = time.gmtime()
