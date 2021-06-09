@@ -6,6 +6,6 @@ def save_history_array(args, history_indices, history, history_name='loss'):
     
     with open(str(pl.Path(args.out_path) / file_name) , 'w')\
             as file:
-        file.write(f'index,{history_name}\n')
+        file.write(f'batch,{history_name}\n')
         for i in range(len(history)):
             file.write(f'{history_indices[i]},{history[i]}\n')

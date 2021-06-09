@@ -1,3 +1,4 @@
+import math
 import pathlib as pl
 import argparse
 import matplotlib.pyplot as plt
@@ -42,12 +43,10 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
         # Set model in train mode
         t_cnn.train()
 
-        running_train_loss = 0.0
         for i, data in enumerate(train_dataloader, start=0):
+            running_train_loss = 0.0
             # Extract labels and data
             input_batch, labels = data[0].to(DEVICE), data[1].to(DEVICE)
-            print('labels', type(labels), labels.shape)
-            print('labels', labels)
             # zero the parameter gradients
             optimizer.zero_grad()
 
@@ -65,18 +64,19 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
                 print('Epoch: %d, Batch: %5d, Running_train_loss: %.2e' %
                     (epoch + 1, i + 1, running_train_loss / step))
             
-            train_loss_list.append(running_train_loss)
-            train_loss_index_list.append((epoch + 1)*(i + 1))
-            running_train_loss = 0.0
+        train_loss_list.append(running_train_loss)
+        train_loss_index_list.append(epoch)
+            
 
         # Disable gradient computations and set model into evaluation mode
         t_cnn.eval()
         with torch.no_grad():
             # Predict on validation set
             output, truth = test.test_cnn(t_cnn, dataloader=val_dataloader)
+
         val_loss = criterion(output, truth)
         val_loss_list.append(val_loss)
-        val_loss_index_list.append((epoch + 1)*(i + 1))
+        val_loss_index_list.append(epoch)
 
     print('Finished Training')
 
