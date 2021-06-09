@@ -45,7 +45,7 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
         if args.dev_plot:
             plt.imshow(conf_matrix)
 
-    truth = torch.LongTensor(truth)
+    truth = torch.LongTensor(truth).to(DEVICE)
     
     return outputs, truth
         
