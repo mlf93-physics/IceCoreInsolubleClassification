@@ -12,7 +12,7 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
     probs = []
     predictions = []
     truth = []
-    outputs = torch.Tensor()
+    outputs = torch.Tensor().to(DEVICE)
 
     for _, data in enumerate(dataloader, start=0):
         # Extract labels and data
@@ -21,7 +21,7 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
         truth.extend(labels.tolist())
         # Predict validation batches
         output = cnn(input_batch).to(DEVICE)
-        outputs = torch.cat((outputs, output), 0)
+        outputs = torch.cat((outputs, output), 0).to(DEVICE)
 
         if get_proba:
             # Get probabilities
