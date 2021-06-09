@@ -42,8 +42,8 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
     train_loss_index_list = []
     val_loss_list = []
     val_loss_index_list = []
-    running_train_loss = 0.0
     for epoch in range(args.n_epochs):  # loop over the dataset multiple times
+        running_train_loss = 0.0
 
         # Set model in train mode
         t_cnn.train()
@@ -67,7 +67,6 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
             if i % step == step - 1:    # print every 2000 mini-batches
                 print('Epoch: %d, Batch: %5d, Running_train_loss: %.2e' %
                     (epoch + 1, i + 1, running_train_loss / ((i + 1)*args.batch_size)))
-            
         train_loss_list.append(running_train_loss / ((i + 1)*args.batch_size))
         train_loss_index_list.append(epoch)
             
