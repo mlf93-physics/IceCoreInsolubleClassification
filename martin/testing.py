@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import sklearn.metrics as skl_metrics
+import matplotlib.pyplot as plt
 from cnn_setups import TorchNeuralNetwork
 import utilities as utils
 from utilities.constants import *
@@ -11,14 +12,16 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
     probs = []
     predictions = []
     truth = []
+    outputs = torch.Tensor()
 
     for _, data in enumerate(dataloader, start=0):
         # Extract labels and data
-        input_batch, labels = data[0].to('cuda'), data[1].to('cuda')
+        input_batch, labels = data[0].to(DEVICE), data[1].to(DEVICE)
         # Save validation labels
         truth.extend(labels.tolist())
         # Predict validation batches
-        output = cnn(input_batch).to('cuda')
+        output = cnn(input_batch).to(DEVICE)
+        outputs = torch.cat((outputs, output), 0)
 
         if get_proba:
             # Get probabilities
@@ -44,7 +47,7 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
 
     truth = torch.LongTensor(truth)
     
-    return output, truth
+    return outputs, truth
         
 
 def test_validation_on_saved_model(args):
