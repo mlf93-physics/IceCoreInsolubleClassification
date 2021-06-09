@@ -127,6 +127,41 @@ def train_val_dataloader_split_weighted_subset(train_dataset, args, num_classes=
 
     return train_indices, val_indices
 
+def train_val_test_dataloader_weighted_subset(train_dataset, args, num_classes=6):
+    class_sample_counts = torch.unique(torch.FloatTensor(train_dataset.targets),
+        return_counts=True)[1]
+    
+    weights = 1. / class_sample_counts
+    samples_weights = weights[train_dataset.targets]
+
+    if args.n_datapoints < 0:
+        num_samples = torch.min(class_sample_counts).item()*\
+            class_sample_counts.size()[0]
+    else:
+        num_samples = args.n_datapoints
+    
+    sampler = t_data.WeightedRandomSampler(
+        weights=samples_weights,
+        num_samples=num_samples,
+        replacement=False)
+
+    indices = list(sampler)
+
+    # Find split
+    split1 = int(np.floor((args.val_frac + args.test_frac) * num_samples))
+    # Split dataset
+    train_indices = indices[split1:]
+    val_test_indices = indices[:split1]
+    split2 = int(np.floor(args.val_frac/(args.val_frac + args.test_frac)
+        * len(val_test_indices)))
+    val_indices = val_test_indices[:split2]
+    test_indices = val_test_indices[split2:]
+
+    # train_subdataset = t_data.Subset(train_indices, train_indices)
+    # val_subdataset = t_data.Subset(train_indices, val_indices)
+
+    return train_indices, val_indices, test_indices
+
 
 def define_dataloader(args):
     print('Define dataloader')
@@ -140,8 +175,11 @@ def define_dataloader(args):
     # Get sample indices
     # train_sampler, val_sampler =\
     #     utils.train_val_dataloader_split_random_subset(args)
-    train_indices, val_indices =\
-        train_val_dataloader_split_weighted_subset(train_dataset, args)
+    # train_indices, val_indices =\
+    #     train_val_dataloader_split_weighted_subset(train_dataset, args)
+
+    train_indices, val_indices, test_indices =\
+        train_val_test_dataloader_weighted_subset(train_dataset, args)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=args.batch_size, num_workers=args.n_threads,
@@ -151,4 +189,8 @@ def define_dataloader(args):
         batch_size=args.batch_size, num_workers=args.n_threads,
         sampler=val_indices)
 
-    return train_dataloader, val_dataloader
+    test_dataloader = torch.utils.data.DataLoader(train_dataset,
+        batch_size=args.batch_size, num_workers=args.n_threads,
+        sampler=test_indices)
+
+    return train_dataloader, val_dataloader, test_dataloader

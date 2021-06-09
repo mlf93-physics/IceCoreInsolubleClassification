@@ -5,7 +5,7 @@ from cnn_setups import TorchNeuralNetwork
 import utilities as utils
 from utilities.constants import *
 
-def test_cnn(cnn, dataloader=None, get_proba=False):
+def test_cnn(cnn, args, dataloader=None, get_proba=False):
     print('Get predictions on data')
 
     probs = []
@@ -35,8 +35,12 @@ def test_cnn(cnn, dataloader=None, get_proba=False):
 
     if get_proba:
         # Get accuracy score
-        acc = skl_metrics.balanced_accuracy_score(truth, predictions)
-        print(f'Accuracy score: {acc*100:.2f}%')
+        conf_matrix = skl_metrics.confusion_matrix(truth, predictions)
+        print(f'Confusion matrix:\n {conf_matrix}')
+        utils.save_conf_matrix(args, conf_matrix)
+
+        if args.dev_plot:
+            plt.imshow(conf_matrix)
 
     truth = torch.LongTensor(truth)
     

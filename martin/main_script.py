@@ -23,11 +23,14 @@ parser.add_argument('--n_datapoints', type=int, default=100)
 parser.add_argument('--batch_size', type=int, default=4)
 parser.add_argument('--n_threads', type=int, default=0)
 parser.add_argument('--n_epochs', type=int, default=2)
-parser.add_argument('--val_frac', type=float, default=0.25)
+parser.add_argument('--val_frac', type=float, default=0.15)
+parser.add_argument('--test_frac', type=float, default=0.15)
 parser.add_argument('--n_folds', type=int, default=4)
-parser.add_argument('--save_cnn', action='store_true')    
+parser.add_argument('--save_cnn', action='store_true')
+parser.add_argument('--dev_plot', action='store_true')
 
-def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
+def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
+        test_dataloader=None):
     print('Initialising torch CNN')
     t_cnn = cnns.TorchNeuralNetwork().to(DEVICE)
     criterion = t_nn.CrossEntropyLoss()
@@ -72,13 +75,18 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
         t_cnn.eval()
         with torch.no_grad():
             # Predict on validation set
-            output, truth = test.test_cnn(t_cnn, dataloader=val_dataloader)
+            output, truth = test.test_cnn(t_cnn, args, dataloader=val_dataloader)
 
         val_loss = criterion(output, truth)
         val_loss_list.append(val_loss)
         val_loss_index_list.append(epoch)
 
     print('Finished Training')
+    t_cnn.eval()
+    with torch.no_grad():
+        # Predict on validation set
+        test_output, test_truth = test.test_cnn(t_cnn, args, dataloader=test_dataloader,
+            get_proba=True)
 
     if args.save_cnn:
         print('Saving trained network')
@@ -87,8 +95,10 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None):
     
     utils.save_history_array(args, train_loss_index_list, train_loss_list, history_name='train_loss')
     utils.save_history_array(args, val_loss_index_list, val_loss_list, history_name='val_loss')
-    utils.plot_history_array(train_loss_index_list, train_loss_list)
-    utils.plot_history_array(val_loss_index_list, val_loss_list)
+
+    if args.dev_plot:
+        utils.plot_history_array(train_loss_index_list, train_loss_list)
+        utils.plot_history_array(val_loss_index_list, val_loss_list)
     
 
 def main(args):
@@ -96,10 +106,10 @@ def main(args):
 
     print('Running main script')
 
-    train_dataloader, val_dataloader = utils.define_dataloader(args)
+    train_dataloader, val_dataloader, test_dataloader = utils.define_dataloader(args)
 
     run_torch_CNN(args, train_dataloader=train_dataloader,
-        val_dataloader=val_dataloader)
+        val_dataloader=val_dataloader, test_dataloader=test_dataloader)
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -111,5 +121,6 @@ if __name__ == '__main__':
     else:
         main(args)
 
-    plt.tight_layout()
-    plt.show()
+    if args.dev_plot:
+        plt.tight_layout()
+        plt.show()
