@@ -14,11 +14,11 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
 
     for _, data in enumerate(dataloader, start=0):
         # Extract labels and data
-        input_batch, labels = data[0].to(DEVICE), data[1].to(DEVICE)
+        input_batch, labels = data[0].to('cuda'), data[1].to('cuda')
         # Save validation labels
         truth.extend(labels.tolist())
         # Predict validation batches
-        output = cnn(input_batch).to(DEVICE)
+        output = cnn(input_batch).to('cuda')
 
         if get_proba:
             # Get probabilities
