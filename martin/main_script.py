@@ -35,8 +35,10 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         test_dataloader=None):
     print('Initialising torch CNN')
     t_cnn = cnns.TorchNeuralNetwork().to(DEVICE)
+    print(t_cnn)
     criterion = t_nn.CrossEntropyLoss()
-    optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
+    # optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
+    optimizer = t_optim.Adam(t_cnn.parameters(), lr=0.001)
 
     print('Running torch CNN')
     train_loss_list = []
