@@ -32,9 +32,9 @@ class TorchNeuralNetwork(t_nn.Module):
 
     def forward(self, x):
         # Apply each layer to the input image x
-        x = self.pool(t_functional.relu(self.conv1(x)))
-        x = self.pool(t_functional.relu(self.conv2(x)))
-        x = self.pool(t_functional.relu(self.conv3(x)))
+        x = self.pool(t_functional.relu(self.conv1_bn(self.conv1(x))))
+        x = self.pool(t_functional.relu(self.conv2_bn(self.conv2(x))))
+        x = self.pool(t_functional.relu(self.conv3_bn(self.conv3(x))))
         
         x = torch.flatten(x, 1) # flatten all dimensions except batch
         x = t_functional.relu(self.fc1_bn(self.fc1(x)))
