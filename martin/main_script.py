@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as t_nn
 import torch.optim as t_optim
+from codecarbon import EmissionsTracker
 import utilities as utils
 from utilities.constants import *
 import cnn_setups as cnns
@@ -67,6 +68,7 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
             if i % step == step - 1:    # print every 2000 mini-batches
                 print('Epoch: %d, Batch: %5d, Running_train_loss: %.2e' %
                     (epoch + 1, i + 1, running_train_loss / ((i + 1)*args.batch_size)))
+
         train_loss_list.append(running_train_loss / ((i + 1)*args.batch_size))
         train_loss_index_list.append(epoch)
             
@@ -105,12 +107,18 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
 def main(args):
     print('Using {} device'.format(DEVICE))
 
+    tracker = EmissionsTracker(output_dir=args.out_path,
+        measure_power_secs=1)
+    tracker.start()
+
     print('Running main script')
 
     train_dataloader, val_dataloader, test_dataloader = utils.define_dataloader(args)
 
     run_torch_CNN(args, train_dataloader=train_dataloader,
         val_dataloader=val_dataloader, test_dataloader=test_dataloader)
+
+    tracker.stop()
 
 if __name__ == '__main__':
     args = parser.parse_args()
