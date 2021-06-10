@@ -32,12 +32,22 @@ parser.add_argument('--n_folds', type=int, default=4)
 parser.add_argument('--save_cnn', action='store_true')
 parser.add_argument('--save_history', action='store_true')
 parser.add_argument('--dev_plot', action='store_true')
+parser.add_argument('-a', '--architecture', type=int, default=1)
 
 def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         test_dataloader=None):
     print('Initialising torch CNN')
-    t_cnn = cnns.TorchNeuralNetwork().to(DEVICE)
+    if args.architecture == 1:
+        t_cnn = cnns.TorchNeuralNetwork1().to(DEVICE)
+    elif args.architecture == 2:
+        t_cnn = cnns.TorchNeuralNetwork2().to(DEVICE)
+    elif args.architecture == 3:
+        t_cnn = cnns.TorchNeuralNetwork3().to(DEVICE)
+    elif args.architecture == 4:
+        t_cnn = cnns.TorchNeuralNetwork4().to(DEVICE)
+
     print(torchsummary.summary(t_cnn, (1, IMAGE_HEIGHT, IMAGE_WIDTH)))
+
     criterion = t_nn.CrossEntropyLoss()
     # optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
     optimizer = t_optim.Adam(t_cnn.parameters(), lr=args.lr)

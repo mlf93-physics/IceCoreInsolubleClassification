@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import sklearn.metrics as skl_metrics
 import matplotlib.pyplot as plt
-from cnn_setups import TorchNeuralNetwork
+import cnn_setups as cnns
 import utilities as utils
 from utilities.constants import *
 
@@ -54,7 +54,7 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
 def test_validation_on_saved_model(args):
     print('Testing validation set on saved model')
     # Make cnn from file
-    t_cnn = TorchNeuralNetwork()
+    t_cnn = cnns.TorchNeuralNetwork()
     t_cnn.load_state_dict(torch.load(args.cnn_file))
 
     _, val_dataloader = utils.define_dataloader(args)

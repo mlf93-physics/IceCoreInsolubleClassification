@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import torchvision
 import torch
@@ -45,7 +46,50 @@ def data_loader(args, folder_name=None, batch_size=4):
                                             num_workers=args.n_threads)
     return data_loader
 
-if __name__ == '__main__':
-    print('Starting clean up function. Press enter to continue')
-    input()
-    clean_up_imgpaths()
+def import_history(path=None):
+    path = pl.Path(path)
+    files = path.glob('*.txt')
+    indices = []
+    values = []
+    headers = []
+
+    for file in files:
+        index = []
+        value = []
+        with open(str(file), 'r') as temp_file:
+            header = temp_file.readline().strip().split(',')
+
+            for iline in temp_file:
+                line = iline.split(',')
+                index.append(int(line[0]))
+                value.append(float(line[1]))
+        
+        headers.append(header)
+        indices.append(index)
+        values.append(value)
+        
+    return headers, indices, values
+
+def import_confusion_matrix(path=None):
+    path = pl.Path(path)
+    conf_matrices = []
+
+    with open(str(path), 'r') as temp_file:
+        line = temp_file.readline().split(',')
+        num_classes = len(line)
+
+    with open(str(path), 'r') as temp_file:
+
+        matrix = np.zeros((num_classes, num_classes))
+        for i, iline in enumerate(temp_file):
+            if i % num_classes == 0 and i > 0:
+                conf_matrices.append(matrix)
+                matrix = np.zeros((num_classes, num_classes))
+
+
+            line = iline.strip().split(',')
+            for j in range(num_classes):
+                matrix[int(i % num_classes), j] = float(line[j])
+
+
+    return conf_matrices

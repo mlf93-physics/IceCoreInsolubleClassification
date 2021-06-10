@@ -3,7 +3,9 @@ from utilities.import_and_clean_data import get_folder_statistics,\
                                             import_csv_file,\
                                             write_to_csv_file,\
                                             import_img,\
-                                            data_loader
+                                            data_loader,\
+                                            import_history,\
+                                            import_confusion_matrix
 
 #### plotting ####
 from utilities.plotting import plot_images, plot_history_array
