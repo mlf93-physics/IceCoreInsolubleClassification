@@ -107,9 +107,8 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
 def main(args):
     print('Using {} device'.format(DEVICE))
 
-    tracker = EmissionsTracker(output_dir=args.out_path,
-        measure_power_secs=1)
-    tracker.start()
+    # tracker = EmissionsTracker(output_dir=args.out_path)
+    # tracker.start()
 
     print('Running main script')
 
@@ -118,7 +117,7 @@ def main(args):
     run_torch_CNN(args, train_dataloader=train_dataloader,
         val_dataloader=val_dataloader, test_dataloader=test_dataloader)
 
-    tracker.stop()
+    # tracker.stop()
 
 if __name__ == '__main__':
     args = parser.parse_args()
