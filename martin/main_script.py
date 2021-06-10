@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as t_nn
 import torch.optim as t_optim
+import torchsummary
 from codecarbon import EmissionsTracker
 import utilities as utils
 from utilities.constants import *
@@ -26,6 +27,7 @@ parser.add_argument('--n_threads', type=int, default=0)
 parser.add_argument('--n_epochs', type=int, default=2)
 parser.add_argument('--val_frac', type=float, default=0.15)
 parser.add_argument('--test_frac', type=float, default=0.15)
+parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--n_folds', type=int, default=4)
 parser.add_argument('--save_cnn', action='store_true')
 parser.add_argument('--save_history', action='store_true')
@@ -35,10 +37,10 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         test_dataloader=None):
     print('Initialising torch CNN')
     t_cnn = cnns.TorchNeuralNetwork().to(DEVICE)
-    print(t_cnn)
+    print(torchsummary.summary(t_cnn, (1, IMAGE_HEIGHT, IMAGE_WIDTH)))
     criterion = t_nn.CrossEntropyLoss()
     # optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
-    optimizer = t_optim.Adam(t_cnn.parameters(), lr=0.01)
+    optimizer = t_optim.Adam(t_cnn.parameters(), lr=args.lr)
 
     print('Running torch CNN')
     train_loss_list = []
