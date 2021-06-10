@@ -37,6 +37,6 @@ class TorchNeuralNetwork(t_nn.Module):
         x = self.pool(t_functional.relu(self.conv3(x)))
         
         x = torch.flatten(x, 1) # flatten all dimensions except batch
-        x = t_functional.relu(self.fc1(x))
+        x = t_functional.relu(self.fc1_bn(self.fc1(x)))
         x = self.fc2(x)
         return x
