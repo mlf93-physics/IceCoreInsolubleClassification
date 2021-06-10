@@ -16,4 +16,4 @@ from utilities.datasets import ImageDataset,\
     define_dataloader
 
 #### save functions ####
-from utilities.save_functions import save_history_array
+from utilities.save_functions import save_history_array, save_conf_matrix
