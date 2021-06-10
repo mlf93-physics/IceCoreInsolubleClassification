@@ -39,6 +39,7 @@ def test_cnn(cnn, args, dataloader=None, get_proba=False):
     if get_proba:
         # Get accuracy score
         conf_matrix = skl_metrics.confusion_matrix(truth, predictions)
+        conf_matrix = conf_matrix/np.sum(np.sum(conf_matrix))
         print(f'Confusion matrix:\n {conf_matrix}')
         utils.save_conf_matrix(args, conf_matrix)
 
