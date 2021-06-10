@@ -77,7 +77,8 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         t_cnn.eval()
         with torch.no_grad():
             # Predict on validation set
-            output, truth = test.test_cnn(t_cnn, args, dataloader=val_dataloader)
+            output, truth = test.test_cnn(t_cnn, args, dataloader=val_dataloader,
+                get_proba=True)
 
         val_loss = criterion(output, truth)
         val_loss_list.append(val_loss)
