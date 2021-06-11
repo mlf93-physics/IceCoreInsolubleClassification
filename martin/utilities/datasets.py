@@ -56,8 +56,8 @@ def train_val_dataloader_split_random_subset(args):
 
     # Prepare indices for sampler
     np.random.seed(SEED)
-    indices = np.random.randint(0, size_dataset, args.n_datapoints)
-    split = int(np.floor(args.val_frac * args.n_datapoints))
+    indices = np.random.randint(0, size_dataset, args["n_datapoints"])
+    split = int(np.floor(args["val_frac"] * args["n_datapoints"]))
 
     # Split dataset
     train_indices = indices[split:]
@@ -103,11 +103,11 @@ def train_val_dataloader_split_weighted_subset(train_dataset, args, num_classes=
     weights = 1. / class_sample_counts
     samples_weights = weights[train_dataset.targets]
 
-    if args.n_datapoints < 0:
+    if args["n_datapoints"] < 0:
         num_samples = torch.min(class_sample_counts).item()*\
             class_sample_counts.size()[0]
     else:
-        num_samples = args.n_datapoints
+        num_samples = args["n_datapoints"]
     
     sampler = t_data.WeightedRandomSampler(
         weights=samples_weights,
@@ -117,7 +117,7 @@ def train_val_dataloader_split_weighted_subset(train_dataset, args, num_classes=
     indices = list(sampler)
 
     # Find split
-    split = int(np.floor(args.val_frac * num_samples))
+    split = int(np.floor(args["val_frac"] * num_samples))
     # Split dataset
     train_indices = indices[split:]
     val_indices = indices[:split]
@@ -134,11 +134,11 @@ def train_val_test_dataloader_weighted_subset(train_dataset, args, num_classes=6
     weights = 1. / class_sample_counts
     samples_weights = weights[train_dataset.targets]
 
-    if args.n_datapoints < 0:
+    if args["n_datapoints"] < 0:
         num_samples = torch.min(class_sample_counts).item()*\
             class_sample_counts.size()[0]
     else:
-        num_samples = args.n_datapoints
+        num_samples = args["n_datapoints"]
     
     sampler = t_data.WeightedRandomSampler(
         weights=samples_weights,
@@ -148,11 +148,11 @@ def train_val_test_dataloader_weighted_subset(train_dataset, args, num_classes=6
     indices = list(sampler)
 
     # Find split
-    split1 = int(np.floor((args.val_frac + args.test_frac) * num_samples))
+    split1 = int(np.floor((args["val_frac"] + args["test_frac"]) * num_samples))
     # Split dataset
     train_indices = indices[split1:]
     val_test_indices = indices[:split1]
-    split2 = int(np.floor(args.val_frac/(args.val_frac + args.test_frac)
+    split2 = int(np.floor(args["val_frac"]/(args["val_frac"] + args["test_frac"])
         * len(val_test_indices)))
     val_indices = val_test_indices[:split2]
     test_indices = val_test_indices[split2:]
@@ -166,9 +166,10 @@ def train_val_test_dataloader_weighted_subset(train_dataset, args, num_classes=6
 def define_dataloader(args):
     print('Define dataloader')
     train_dataset = torchvision.datasets.ImageFolder(
-        root=args.train_path, transform=TRAIN_TRANSFORM,
+        root=args["train_path"], transform=TRAIN_TRANSFORM,
         loader=utils.import_img)
 
+    num_classes = len(train_dataset.classes)
     print('Train classes: ', train_dataset.classes, 'class_to_idx',
         train_dataset.class_to_idx)
 
@@ -182,15 +183,15 @@ def define_dataloader(args):
         train_val_test_dataloader_weighted_subset(train_dataset, args)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
-        batch_size=args.batch_size, num_workers=args.n_threads,
+        batch_size=args["batch_size"], num_workers=args["n_threads"],
         sampler=train_indices)
     
     val_dataloader = torch.utils.data.DataLoader(train_dataset,
-        batch_size=args.batch_size, num_workers=args.n_threads,
+        batch_size=args["batch_size"], num_workers=args["n_threads"],
         sampler=val_indices)
 
     test_dataloader = torch.utils.data.DataLoader(train_dataset,
-        batch_size=args.batch_size, num_workers=args.n_threads,
+        batch_size=args["batch_size"], num_workers=args["n_threads"],
         sampler=test_indices)
 
-    return train_dataloader, val_dataloader, test_dataloader
+    return train_dataloader, val_dataloader, test_dataloader, num_classes

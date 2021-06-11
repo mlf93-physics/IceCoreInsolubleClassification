@@ -37,27 +37,27 @@ parser.add_argument('-a', '--architecture', type=int, default=1)
 def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         test_dataloader=None):
     print('Initialising torch CNN')
-    if args.architecture == 1:
-        t_cnn = cnns.TorchNeuralNetwork1().to(DEVICE)
-    elif args.architecture == 2:
-        t_cnn = cnns.TorchNeuralNetwork2().to(DEVICE)
-    elif args.architecture == 3:
-        t_cnn = cnns.TorchNeuralNetwork3().to(DEVICE)
-    elif args.architecture == 4:
-        t_cnn = cnns.TorchNeuralNetwork4().to(DEVICE)
+    if args["architecture"] == 1:
+        t_cnn = cnns.TorchNeuralNetwork1(num_classes=args['num_classes']).to(DEVICE)
+    elif args["architecture"] == 2:
+        t_cnn = cnns.TorchNeuralNetwork2(num_classes=args['num_classes']).to(DEVICE)
+    elif args["architecture"] == 3:
+        t_cnn = cnns.TorchNeuralNetwork3(num_classes=args['num_classes']).to(DEVICE)
+    elif args["architecture"] == 4:
+        t_cnn = cnns.TorchNeuralNetwork4(num_classes=args['num_classes']).to(DEVICE)
 
     print(torchsummary.summary(t_cnn, (1, IMAGE_HEIGHT, IMAGE_WIDTH)))
 
     criterion = t_nn.CrossEntropyLoss()
     # optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
-    optimizer = t_optim.Adam(t_cnn.parameters(), lr=args.lr)
+    optimizer = t_optim.Adam(t_cnn.parameters(), lr=args["lr"])
 
     print('Running torch CNN')
     train_loss_list = []
     train_loss_index_list = []
     val_loss_list = []
     val_loss_index_list = []
-    for epoch in range(args.n_epochs):  # loop over the dataset multiple times
+    for epoch in range(args["n_epochs"]):  # loop over the dataset multiple times
         running_train_loss = 0.0
 
         # Set model in train mode
@@ -81,9 +81,9 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
             running_train_loss += float(train_loss.item())
             if i % step == step - 1:    # print every 2000 mini-batches
                 print('Epoch: %d, Batch: %5d, Running_train_loss: %.2e' %
-                    (epoch + 1, i + 1, running_train_loss / ((i + 1)*args.batch_size)))
+                    (epoch + 1, i + 1, running_train_loss / ((i + 1)*args["batch_size"])))
 
-        train_loss_list.append(running_train_loss / ((i + 1)*args.batch_size))
+        train_loss_list.append(running_train_loss / ((i + 1)*args["batch_size"]))
         train_loss_index_list.append(epoch)
             
 
@@ -92,7 +92,7 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         with torch.no_grad():
             # Predict on validation set
             output, truth = test.test_cnn(t_cnn, args, dataloader=val_dataloader,
-                get_proba=True)
+                get_proba=True, data_set='val')
 
         val_loss = criterion(output, truth)
         val_loss_list.append(val_loss)
@@ -101,20 +101,20 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
     print('Finished Training')
     t_cnn.eval()
     with torch.no_grad():
-        # Predict on validation set
+        # Predict on test set
         test_output, test_truth = test.test_cnn(t_cnn, args, dataloader=test_dataloader,
-            get_proba=True)
+            get_proba=True, data_set='test')
 
-    if args.save_cnn:
+    if args["save_cnn"]:
         print('Saving trained network')
-        torch.save(t_cnn.state_dict(), pl.Path(args.out_path) /
+        torch.save(t_cnn.state_dict(), pl.Path(args["out_path"]) /
             f'saved_network_{TIME_STAMP}.txt')
     
-    if args.save_history:
+    if args["save_history"]:
         utils.save_history_array(args, train_loss_index_list, train_loss_list, history_name='train_loss')
         utils.save_history_array(args, val_loss_index_list, val_loss_list, history_name='val_loss')
 
-    if args.dev_plot:
+    if args["dev_plot"]:
         utils.plot_history_array(train_loss_index_list, train_loss_list)
         utils.plot_history_array(val_loss_index_list, val_loss_list)
     
@@ -122,12 +122,15 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
 def main(args):
     print('Using {} device'.format(DEVICE))
 
-    # tracker = EmissionsTracker(output_dir=args.out_path)
+    # tracker = EmissionsTracker(output_dir=args["out_path"])
     # tracker.start()
 
     print('Running main script')
 
-    train_dataloader, val_dataloader, test_dataloader = utils.define_dataloader(args)
+    train_dataloader, val_dataloader, test_dataloader, num_classes\
+        = utils.define_dataloader(args)
+
+    args["num_classes"] = num_classes
 
     run_torch_CNN(args, train_dataloader=train_dataloader,
         val_dataloader=val_dataloader, test_dataloader=test_dataloader)
@@ -137,13 +140,13 @@ def main(args):
 if __name__ == '__main__':
     args = parser.parse_args()
     print('Arguments: ', args)
+    args = vars(args)
 
-
-    if args.cnn_file is not None:
+    if args["cnn_file"] is not None:
         test.test_validation_on_saved_model(args)
     else:
         main(args)
 
-    if args.dev_plot:
+    if args["dev_plot"]:
         plt.tight_layout()
         plt.show()

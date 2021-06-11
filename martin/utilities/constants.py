@@ -2,8 +2,6 @@ __all__ = [
     'DEVICE',
     'IMAGE_WIDTH',
     'IMAGE_HEIGHT',
-    'NUM_CLASSES',
-    'CLASSES',
     'SEED',
     'TRAIN_TRANSFORM',
     'VAL_TRANSFORM',
@@ -25,7 +23,6 @@ TIME_STAMP = time.strftime("%Y-%m-%d_%H-%M-%S", TIME_STAMP)
 IMAGE_WIDTH = 256
 IMAGE_HEIGHT = 256
 
-NUM_CLASSES = 6
 # Classes: 'camp', 'corylus', 'dust', 'grim', 'qrob', 'qsub'
 CLASSES = np.array([1, 2, 3, 4, 5, 6])
 
