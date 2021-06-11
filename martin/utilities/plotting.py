@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn_image as sb_img
 
+
 def plot_images(images=None, labels=None):
     if len(images) > 20:
         raise ValueError('ERROR: Too many images to plot. Max = 20')
@@ -14,3 +15,4 @@ def plot_history_array(history_indices, history, xlabel='Batches', ylabel='Loss'
     plt.plot(history_indices, history)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+

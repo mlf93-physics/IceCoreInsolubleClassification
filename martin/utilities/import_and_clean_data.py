@@ -93,3 +93,21 @@ def import_confusion_matrix(path=None):
 
 
     return conf_matrices
+
+def import_probs_and_truth(dir=None, data_set='test'):
+    dir = pl.Path(dir)
+
+    files = list(dir.glob('*.txt'))
+    truth_prefix = data_set + '_truth' 
+    prob_prefix = data_set + '_prob' 
+
+    for file in files:
+        if truth_prefix in file.stem:
+            truth_file = file
+        elif prob_prefix in file.stem:
+            prob_file = file
+
+    truth = np.genfromtxt(truth_file, delimiter=',')
+    prob = np.genfromtxt(prob_file, delimiter=',')
+
+    return truth, prob

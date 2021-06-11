@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sklearn.metrics as skl_metrics
 import utilities as utils
 
 def history_figure():
@@ -33,7 +34,35 @@ def confusion_matrix_vs_time():
     plt.ylabel('Probability')
     plt.ylim(0, 1)
 
+def plot_roc_curves():
+    truth, prob = utils.import_probs_and_truth(
+        '../../trained_cnns/test_run_2021-06-11_12-19-16/')
+    
+    num_points, num_classes = truth.shape[0], truth.shape[1]
+
+    print('num_points, num_classes', num_points, num_classes)
+
+    tp_rates = []
+    fp_rates = []
+
+    classes = ['camp', 'corylus', 'dust', 'grim', 'qrob', 'qsub']
+
+    for i in range(num_classes):
+        temp_fpr, temp_tpr, _ = skl_metrics.roc_curve(truth[:, i],
+            prob[:, i], drop_intermediate=True)
+
+        temp_auc = skl_metrics.auc(temp_fpr, temp_tpr)
+
+        plt.plot(temp_fpr, temp_tpr, label=classes[i] + f'; AUC = {temp_auc:.2f}')
+    
+    fpr_micro, tpr_micro, _ = skl_metrics.roc_curve(truth.ravel(), prob.ravel())
+    temp_auc = skl_metrics.auc(fpr_micro, tpr_micro)
+
+    plt.plot(fpr_micro, tpr_micro, 'k', label=f'Micro-average; AUC = {temp_auc:.2f}')
+    plt.legend()
+
 # history_figure()
-confusion_matrix_vs_time()
+# confusion_matrix_vs_time()
+plot_roc_curves()
 
 plt.show()

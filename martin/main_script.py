@@ -1,3 +1,4 @@
+import os
 import math
 import pathlib as pl
 import argparse
@@ -33,6 +34,7 @@ parser.add_argument('--save_cnn', action='store_true')
 parser.add_argument('--save_history', action='store_true')
 parser.add_argument('--dev_plot', action='store_true')
 parser.add_argument('-a', '--architecture', type=int, default=1)
+parser.add_argument('--run_label', type=str, default='')
 
 def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         test_dataloader=None):
@@ -141,6 +143,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print('Arguments: ', args)
     args = vars(args)
+
+    # Append run_label to out path
+    args['out_path'] += args['run_label'] + f'_run_{TIME_STAMP}/'
+    os.mkdir(args['out_path'])
 
     if args["cnn_file"] is not None:
         test.test_validation_on_saved_model(args)

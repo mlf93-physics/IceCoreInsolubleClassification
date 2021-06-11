@@ -5,7 +5,8 @@ from utilities.import_and_clean_data import get_folder_statistics,\
                                             import_img,\
                                             data_loader,\
                                             import_history,\
-                                            import_confusion_matrix
+                                            import_confusion_matrix,\
+                                            import_probs_and_truth
 
 #### plotting ####
 from utilities.plotting import plot_images, plot_history_array
