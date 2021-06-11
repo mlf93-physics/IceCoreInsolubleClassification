@@ -1,10 +1,15 @@
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.metrics as skl_metrics
 import utilities as utils
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', type=str, default='')
+
 def history_figure():
-    headers, indices, values = utils.import_history(path='../../trained_cnns/test/')
+    headers, indices, values = utils.import_history(
+        path='../../trained_cnns/test1_run_2021-06-11_14-45-33/temp/')
     
     for i in range(len(headers)):
         plt.plot(indices[i], values[i], label=f'{headers[i][1]}')
@@ -15,7 +20,7 @@ def history_figure():
 
 def confusion_matrix_vs_time():
     conf_matrices = utils.import_confusion_matrix(
-        path='../../trained_cnns/conf_matrix_2021-06-10_15-33-14.txt')
+        path='../../trained_cnns/test1_run_2021-06-11_14-45-33/val_conf_matrix_2021-06-11_14-45-33.txt')
 
     num_epochs = len(conf_matrices)
     num_classes = conf_matrices[0].shape[0]
@@ -34,18 +39,17 @@ def confusion_matrix_vs_time():
     plt.ylabel('Probability')
     plt.ylim(0, 1)
 
-def plot_roc_curves():
-    truth, prob = utils.import_probs_and_truth(
-        '../../trained_cnns/test_run_2021-06-11_12-19-16/')
+def plot_roc_curves(args):
+    truth, prob = utils.import_probs_and_truth(args['path'])
     
     num_points, num_classes = truth.shape[0], truth.shape[1]
 
-    print('num_points, num_classes', num_points, num_classes)
+    print('num_classes', num_classes)
 
-    tp_rates = []
-    fp_rates = []
+    classes3 = ['ash', 'dust', 'pollen']
+    classes6 = ['camp', 'corylus', 'dust', 'grim', 'qrob', 'qsub']
 
-    classes = ['camp', 'corylus', 'dust', 'grim', 'qrob', 'qsub']
+    classes = classes3
 
     for i in range(num_classes):
         temp_fpr, temp_tpr, _ = skl_metrics.roc_curve(truth[:, i],
@@ -61,8 +65,12 @@ def plot_roc_curves():
     plt.plot(fpr_micro, tpr_micro, 'k', label=f'Micro-average; AUC = {temp_auc:.2f}')
     plt.legend()
 
-# history_figure()
-# confusion_matrix_vs_time()
-plot_roc_curves()
+if __name__ == '__main__':
+    args = parser.parse_args()
+    args = vars(args)
 
-plt.show()
+    # history_figure()
+    # confusion_matrix_vs_time()
+    plot_roc_curves(args)
+
+    plt.show()
