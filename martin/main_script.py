@@ -151,7 +151,6 @@ def main(args):
         val_dataloader=val_dataloader, test_dataloader=test_dataloader,
         tracker=CO2_TRACKER)
 
-    tracker.stop()
 
 if __name__ == '__main__':
     args = parser.parse_args()
