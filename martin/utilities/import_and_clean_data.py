@@ -46,14 +46,25 @@ def data_loader(args, folder_name=None, batch_size=4):
                                             num_workers=args["n_threads"])
     return data_loader
 
-def import_history(path=None):
-    path = pl.Path(path)
-    files = path.glob('*.txt')
+def import_history(dir=None):
+    dir = pl.Path(dir)
+
+    files = list(dir.glob('*.txt'))
+    val_prefix = 'val_loss'
+    train_prefix = 'train_loss'
+
+    relevant_files = []
+    for file in files:
+        if val_prefix in file.stem:
+            relevant_files.append(file)
+        elif train_prefix in file.stem:
+            relevant_files.append(file)
+
     indices = []
     values = []
     headers = []
 
-    for file in files:
+    for file in relevant_files:
         index = []
         value = []
         with open(str(file), 'r') as temp_file:
@@ -70,15 +81,24 @@ def import_history(path=None):
         
     return headers, indices, values
 
-def import_confusion_matrix(path=None):
-    path = pl.Path(path)
+def import_confusion_matrix(dir=None, data_set='val'):
+    dir = pl.Path(dir)
+
+    files = list(dir.glob('*.txt'))
+    prefix = data_set + '_conf'
+
+    
+    for file in files:
+        if prefix in file.stem:
+            relevant_file = file
+
     conf_matrices = []
 
-    with open(str(path), 'r') as temp_file:
+    with open(str(relevant_file), 'r') as temp_file:
         line = temp_file.readline().split(',')
         num_classes = len(line)
 
-    with open(str(path), 'r') as temp_file:
+    with open(str(relevant_file), 'r') as temp_file:
 
         matrix = np.zeros((num_classes, num_classes))
         for i, iline in enumerate(temp_file):

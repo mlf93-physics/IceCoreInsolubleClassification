@@ -7,8 +7,8 @@ from utilities.constants import *
 class TorchNeuralNetwork1(t_nn.Module):
     def __init__(self, num_classes=None):
         super().__init__()
-        kernel_size1 = 12
-        kernel_size2 = 6
+        kernel_size1 = 3
+        kernel_size2 =3
  
         # n_layers = 4
 
