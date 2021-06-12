@@ -1,11 +1,17 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
+import torchvision
 import sklearn.metrics as skl_metrics
 import utilities as utils
+import cnn_setups as cnns
+from utilities.constants import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', type=str, default='')
+parser.add_argument('--cnn_file', type=str, default=None)
+
 
 def history_figure():
     headers, indices, values = utils.import_history(
@@ -65,6 +71,33 @@ def plot_roc_curves(args):
     plt.plot(fpr_micro, tpr_micro, 'k', label=f'Micro-average; AUC = {temp_auc:.2f}')
     plt.legend()
 
+def visualise_trained_cnn_filters(args):
+    t_cnn = cnns.TorchNeuralNetwork1(num_classes=6).to(DEVICE)
+    # print('args["cnn_file"]', args["cnn_file"])
+    t_cnn.load_state_dict(torch.load(args["cnn_file"]))
+
+    t_cnn.eval()
+    with torch.no_grad():
+        utils.plot_images(images=t_cnn.conv1.weight)
+
+def visualise_trained_cnn_featuremaps(args):
+    train_dataset = torchvision.datasets.ImageFolder(
+        root=args["train_path"], transform=VISUALIZE_TRANSFORM,
+        loader=utils.import_img)
+
+    dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=1,
+        shuffle=True)
+
+    
+    t_cnn = cnns.TorchNeuralNetwork1(num_classes=6).to(DEVICE)
+    # print('args["cnn_file"]', args["cnn_file"])
+    t_cnn.load_state_dict(torch.load(args["cnn_file"]))
+
+    t_cnn.eval()
+    with torch.no_grad():
+        image, label = dataloader()
+        utils.plot_images(images=t_cnn.conv1(image))
+
 if __name__ == '__main__':
     args = parser.parse_args()
     args = vars(args)
@@ -72,5 +105,6 @@ if __name__ == '__main__':
     # history_figure()
     # confusion_matrix_vs_time()
     plot_roc_curves(args)
+    # visualise_trained_cnn(args)
 
     plt.show()

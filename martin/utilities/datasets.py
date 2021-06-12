@@ -131,12 +131,13 @@ def train_val_test_dataloader_weighted_subset(train_dataset, args, num_classes=6
     class_sample_counts = torch.unique(torch.FloatTensor(train_dataset.targets),
         return_counts=True)[1]
     
-    weights = 1. / class_sample_counts
+    weights = torch.Tensor([1 for _ in range(num_classes)])
     samples_weights = weights[train_dataset.targets]
 
     if args["n_datapoints"] < 0:
-        num_samples = torch.min(class_sample_counts).item()*\
-            class_sample_counts.size()[0]
+        # num_samples = torch.min(class_sample_counts).item()*\
+        #     class_sample_counts.size()[0]
+        num_samples = class_sample_counts.sum().item()
     else:
         num_samples = args["n_datapoints"]
     
@@ -180,7 +181,7 @@ def define_dataloader(args):
     #     train_val_dataloader_split_weighted_subset(train_dataset, args)
 
     train_indices, val_indices, test_indices =\
-        train_val_test_dataloader_weighted_subset(train_dataset, args)
+        train_val_test_dataloader_weighted_subset(train_dataset, args, num_classes=num_classes)
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset,
         batch_size=args["batch_size"], num_workers=args["n_threads"],

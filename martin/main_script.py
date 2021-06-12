@@ -144,7 +144,7 @@ if __name__ == '__main__':
     args = vars(args)
 
     # Append run_label to out path
-    args['out_path'] += args['run_label'] + f'_run_{TIME_STAMP}/'
+    args['out_path'] += '/' + args['run_label'] + f'_run_{TIME_STAMP}/'
     os.mkdir(args['out_path'])
 
     if args["cnn_file"] is not None:
