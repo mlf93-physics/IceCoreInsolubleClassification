@@ -107,11 +107,11 @@ class TorchNeuralNetwork3(t_nn.Module):
         self.pool = t_nn.MaxPool2d(2, stride=1)
         
         self.fc1 = t_nn.Linear(filter3*(IMAGE_WIDTH - sum_kernels)*
-            (IMAGE_HEIGHT - sum_kernels), 256)
-        self.fc2 = t_nn.Linear(256, 84)
+            (IMAGE_HEIGHT - sum_kernels), 120)
+        self.fc2 = t_nn.Linear(120, 84)
         self.fc3 = t_nn.Linear(84, num_classes)
 
-        self.fc1_bn = t_nn.BatchNorm1d(256)
+        self.fc1_bn = t_nn.BatchNorm1d(120)
         self.fc2_bn = t_nn.BatchNorm1d(84)
         self.dropout = t_nn.Dropout(p=0.4)
 
@@ -166,11 +166,11 @@ class TorchNeuralNetwork4(t_nn.Module):
         self.pool = t_nn.MaxPool2d(2, stride=1)
         
         self.fc1 = t_nn.Linear(filter4*(IMAGE_WIDTH - sum_kernels)*
-            (IMAGE_HEIGHT - sum_kernels), 256)
-        self.fc2 = t_nn.Linear(256, 84)
+            (IMAGE_HEIGHT - sum_kernels), 120)
+        self.fc2 = t_nn.Linear(120, 84)
         self.fc3 = t_nn.Linear(84, num_classes)
 
-        self.fc1_bn = t_nn.BatchNorm1d(256)
+        self.fc1_bn = t_nn.BatchNorm1d(120)
         self.fc2_bn = t_nn.BatchNorm1d(84)
         self.dropout = t_nn.Dropout(p=0.4)
 
