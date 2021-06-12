@@ -7,6 +7,7 @@ import torch.nn as t_nn
 import torch.optim as t_optim
 import torchsummary
 from codecarbon import EmissionsTracker
+from carbontracker.tracker import CarbonTracker
 import utilities as utils
 from utilities.constants import *
 import cnn_setups as cnns
@@ -36,7 +37,7 @@ parser.add_argument('-a', '--architecture', type=int, default=1)
 parser.add_argument('--run_label', type=str, default='')
 
 def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
-        test_dataloader=None):
+        test_dataloader=None, tracker=None):
     print('Initialising torch CNN')
     if args["architecture"] == 1:
         t_cnn = cnns.TorchNeuralNetwork1(num_classes=args['num_classes']).to(DEVICE)
@@ -59,6 +60,8 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
     val_loss_list = []
     val_loss_index_list = []
     for epoch in range(args["n_epochs"]):  # loop over the dataset multiple times
+        if DEVICE == 'cuda':
+            tracker.epoch_start()
         running_train_loss = 0.0
 
         # Set model in train mode
@@ -99,12 +102,18 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         val_loss_list.append(val_loss)
         val_loss_index_list.append(epoch)
 
+        if DEVICE == 'cuda':
+            tracker.epoch_start()
+
     print('Finished Training')
     t_cnn.eval()
     with torch.no_grad():
         # Predict on test set
         test_output, test_truth = test.test_cnn(t_cnn, args, dataloader=test_dataloader,
             get_proba=True, data_set='test')
+    
+    if DEVICE == 'cuda':
+        tracker.stop()
 
     if args["save_cnn"]:
         print('Saving trained network')
@@ -123,8 +132,13 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
 def main(args):
     print('Using {} device'.format(DEVICE))
 
-    tracker = EmissionsTracker(output_dir=args["out_path"])
-    tracker.start()
+    # tracker = EmissionsTracker(output_dir=args["out_path"])
+    # tracker.start()
+    # Initialise carbon tracker
+    if DEVICE == 'cuda':
+        CO2_TRACKER = CarbonTracker(epochs=args['n_epochs'])
+    else:
+        CO2_TRACKER = None
 
     print('Running main script')
 
@@ -134,7 +148,8 @@ def main(args):
     args["num_classes"] = num_classes
 
     run_torch_CNN(args, train_dataloader=train_dataloader,
-        val_dataloader=val_dataloader, test_dataloader=test_dataloader)
+        val_dataloader=val_dataloader, test_dataloader=test_dataloader,
+        tracker=CO2_TRACKER)
 
     tracker.stop()
 
