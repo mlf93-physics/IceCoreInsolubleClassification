@@ -114,7 +114,7 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         early_stopping_instance(val_loss, t_cnn)
 
         if DEVICE == 'cuda':
-            tracker.epoch_stop()
+            tracker.epoch_end()
 
         if early_stopping_instance.early_stop:
             print("Early stopping")
