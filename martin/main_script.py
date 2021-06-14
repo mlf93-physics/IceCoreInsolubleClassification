@@ -12,6 +12,7 @@ import utilities as utils
 from utilities.constants import *
 import cnn_setups as cnns
 import testing as test
+import early_stopping
 
 # Set seed
 torch.manual_seed(SEED)
@@ -53,6 +54,8 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
     criterion = t_nn.CrossEntropyLoss()
     # optimizer = t_optim.SGD(t_cnn.parameters(), lr=0.001, momentum=0.9)
     optimizer = t_optim.Adam(t_cnn.parameters(), lr=args["lr"])
+    early_stopping_instance = early_stopping.EarlyStopping(patience=4,
+        verbose=True, path=pl.Path(args["out_path"]) / 'checkpoint.pt')
 
     print('Running torch CNN')
     train_loss_list = []
@@ -108,8 +111,17 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
         val_loss_list.append(val_loss)
         val_loss_index_list.append(epoch)
 
+        early_stopping_instance(val_loss, t_cnn)
+
         if DEVICE == 'cuda':
-            tracker.epoch_start()
+            tracker.epoch_stop()
+
+        if early_stopping_instance.early_stop:
+            print("Early stopping")
+            break
+
+    # load the last checkpoint with the best model
+    t_cnn.load_state_dict(torch.load(pl.Path(args["out_path"]) / 'checkpoint.pt'))
 
     print('Finished Training')
     t_cnn.eval()

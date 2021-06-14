@@ -71,11 +71,12 @@ def confusion_matrix_vs_time(args):
     print(f'Accuracy val: {np.sum(val_diags, axis=1)*100}%')
     print(f'Accuracy train: {np.sum(train_diags, axis=1)*100}%')
     
-    plt.plot(epoch_array, np.sum(val_diags, axis=1))
-    plt.plot(epoch_array, np.sum(train_diags, axis=1))
+    plt.plot(epoch_array, np.sum(train_diags, axis=1), label='Train acc.')
+    plt.plot(epoch_array, np.sum(val_diags, axis=1), label='Val. acc.')
     # plt.plot(epoch_array, val_off_diags, 'k')
     plt.xlabel('Epoch')
     plt.ylabel('Probability')
+    plt.legend()
     plt.ylim(0, 1)
 
 def plot_roc_curves(args):
