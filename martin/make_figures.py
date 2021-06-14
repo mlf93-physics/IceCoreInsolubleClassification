@@ -20,7 +20,12 @@ def history_figure(args):
     headers, indices, values = utils.import_history(
         dir=args['path'])
     
+    plt.figure(figsize=(5, 3), constrained_layout=True)
     for i in range(len(headers)):
+        print('headers[i]', headers[i])
+        if 'train' in headers[i][1]:
+            values[i] = np.array(values[i])*10
+            headers[i][1] += ' (x10)'
         plt.plot(indices[i], values[i], label=f'{headers[i][1]}')
 
     plt.xlabel('Epoch')
@@ -56,9 +61,12 @@ def plot_roc_curves(args):
     print('num_classes', num_classes)
 
     classes3 = ['ash', 'dust', 'pollen']
+    classes_pollen = ['corylus', 'qrobur', 'qsuber']
     classes6 = ['camp', 'corylus', 'dust', 'grim', 'qrob', 'qsub']
 
-    classes = classes3
+    classes = classes_pollen
+
+    plt.figure(figsize=(5, 3), constrained_layout=True)
 
     for i in range(num_classes):
         temp_fpr, temp_tpr, _ = skl_metrics.roc_curve(truth[:, i],

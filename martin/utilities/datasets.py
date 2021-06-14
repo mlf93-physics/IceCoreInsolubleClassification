@@ -131,6 +131,8 @@ def train_val_test_dataloader_weighted_subset(train_dataset, args, num_classes=6
     class_sample_counts = torch.unique(torch.FloatTensor(train_dataset.targets),
         return_counts=True)[1]
     
+    print('class_sample_counts', class_sample_counts)
+    
     weights = torch.Tensor([1 for _ in range(num_classes)])
     samples_weights = weights[train_dataset.targets]
 

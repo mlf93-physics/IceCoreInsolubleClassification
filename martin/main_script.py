@@ -136,7 +136,12 @@ def main(args):
     # tracker.start()
     # Initialise carbon tracker
     if DEVICE == 'cuda':
-        CO2_TRACKER = CarbonTracker(epochs=args['n_epochs'])
+        CO2_TRACKER = CarbonTracker(
+            epochs=args['n_epochs'],
+            epochs_before_pred=-1,
+            monitor_epochs=-1,
+            log_dir=args['out_path'],
+            verbose=2)
     else:
         CO2_TRACKER = None
 
