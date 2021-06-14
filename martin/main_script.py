@@ -66,16 +66,20 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
 
         # Set model in train mode
         t_cnn.train()
+        train_outputs = torch.Tensor().to(DEVICE)
+        train_truth = []
 
         for i, data in enumerate(train_dataloader, start=0):
             # Extract labels and data
             input_batch, labels = data[0].to(DEVICE), data[1].to(DEVICE)
+            train_truth.extend(labels.tolist())
             # zero the parameter gradients
             optimizer.zero_grad()
-
             # forward + backward + optimize
-            outputs = t_cnn(input_batch)
-            train_loss = criterion(outputs, labels)
+            train_output = t_cnn(input_batch).to(DEVICE)
+            train_outputs = torch.cat((train_outputs, train_output), 0).to(DEVICE)
+            
+            train_loss = criterion(train_output, labels)
             train_loss.backward()
             optimizer.step()
 
@@ -89,16 +93,18 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
 
         train_loss_list.append(running_train_loss / ((i + 1)*args["batch_size"]))
         train_loss_index_list.append(epoch)
-            
+        
+        # Save train proba
+        test.save_train_accuracy(args, train_outputs, train_truth)
 
         # Disable gradient computations and set model into evaluation mode
         t_cnn.eval()
         with torch.no_grad():
             # Predict on validation set
-            output, truth = test.test_cnn(t_cnn, args, dataloader=val_dataloader,
+            val_output, val_truth = test.test_cnn(t_cnn, args, dataloader=val_dataloader,
                 get_proba=True, data_set='val')
 
-        val_loss = criterion(output, truth)
+        val_loss = criterion(val_output, val_truth)
         val_loss_list.append(val_loss)
         val_loss_index_list.append(epoch)
 

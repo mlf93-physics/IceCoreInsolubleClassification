@@ -3,10 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import torchvision
+import pathlib as pl
 import sklearn.metrics as skl_metrics
 import utilities as utils
 import cnn_setups as cnns
 from utilities.constants import *
+import seaborn as sb
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--train_path', type=str, default=
@@ -32,23 +34,46 @@ def history_figure(args):
     plt.ylabel('Loss')
     plt.legend()
 
+def confusion_matrix(args):
+    conf_matrix = utils.import_confusion_matrix(
+        dir=args['path'], data_set='test')
+
+    print(f'Accuracy: {np.sum(np.diagonal(conf_matrix[0]))*100}%')
+
+    sb.heatmap(conf_matrix[0], annot=True, cmap=
+        sb.color_palette("light:b", as_cmap=True))
+
 def confusion_matrix_vs_time(args):
-    conf_matrices = utils.import_confusion_matrix(
+    val_conf_matrices = utils.import_confusion_matrix(
         dir=args['path'], data_set='val')
+    
+    train_conf_matrices = utils.import_confusion_matrix(
+        dir=args['path'], data_set='train')
 
-    num_epochs = len(conf_matrices)
-    num_classes = conf_matrices[0].shape[0]
-    diags = np.zeros((num_epochs, num_classes))
-    off_diags = np.zeros((num_epochs, 1))
 
-    for i, matrix in enumerate(conf_matrices):
-        diags[i, :] = np.diagonal(matrix)
-        off_diags[i] = np.sum(np.sum(matrix)) - np.sum(np.diagonal(matrix))
+    num_epochs = len(val_conf_matrices)
+    num_classes = val_conf_matrices[0].shape[0]
+    val_diags = np.zeros((num_epochs, num_classes))
+    val_off_diags = np.zeros((num_epochs, 1))
+    train_diags = np.zeros((num_epochs, num_classes))
+    train_off_diags = np.zeros((num_epochs, 1))
+
+    for i, matrix in enumerate(val_conf_matrices):
+        val_diags[i, :] = np.diagonal(matrix)
+        val_off_diags[i] = np.sum(np.sum(matrix)) - np.sum(np.diagonal(matrix))
+
+    for i, matrix in enumerate(train_conf_matrices):
+        train_diags[i, :] = np.diagonal(matrix)
+        train_off_diags[i] = np.sum(np.sum(matrix)) - np.sum(np.diagonal(matrix))
     
     epoch_array = np.arange(1, num_epochs + 1)
+
+    print(f'Accuracy val: {np.sum(val_diags, axis=1)*100}%')
+    print(f'Accuracy train: {np.sum(train_diags, axis=1)*100}%')
     
-    plt.plot(epoch_array, diags)
-    plt.plot(epoch_array, off_diags, 'k')
+    plt.plot(epoch_array, np.sum(val_diags, axis=1))
+    plt.plot(epoch_array, np.sum(train_diags, axis=1))
+    # plt.plot(epoch_array, val_off_diags, 'k')
     plt.xlabel('Epoch')
     plt.ylabel('Probability')
     plt.ylim(0, 1)
@@ -64,7 +89,7 @@ def plot_roc_curves(args):
     classes_pollen = ['corylus', 'qrobur', 'qsuber']
     classes6 = ['camp', 'corylus', 'dust', 'grim', 'qrob', 'qsub']
 
-    classes = classes_pollen
+    classes = classes6
 
     plt.figure(figsize=(5, 3), constrained_layout=True)
 
@@ -101,10 +126,13 @@ def visualise_trained_cnn_featuremaps(args):
         shuffle=True)
 
     
-    t_cnn = cnns.TorchNeuralNetwork1(num_classes=3).to(DEVICE)
+    t_cnn = cnns.TorchNeuralNetwork2(num_classes=6).to(DEVICE)
     # print('args["cnn_file"]', args["cnn_file"])
     t_cnn.load_state_dict(torch.load(args["cnn_file"],
         map_location=torch.device(DEVICE)))
+
+    print('t_cnn', dir(t_cnn))
+    input()
 
 
     t_cnn.eval()
@@ -129,8 +157,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args = vars(args)
 
+    if args['path'] is not None:
+        path = pl.Path(args['path'])
+
+        files = list(path.glob('*.txt'))
+        network_prefix = 'saved_network'
+
+        relevant_file = []
+        for file in files:
+            if network_prefix in file.stem:
+                relevant_file = file
+
+        args['cnn_file'] = str(relevant_file)
+
     if args['plot_type'] == 'history':
         history_figure(args)
+    elif args['plot_type'] == 'conf':
+        confusion_matrix(args)
     elif args['plot_type'] == 'conf_vs_time':
         confusion_matrix_vs_time(args)
     elif args['plot_type'] == 'roc':

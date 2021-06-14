@@ -110,7 +110,9 @@ def import_confusion_matrix(dir=None, data_set='val'):
             line = iline.strip().split(',')
             for j in range(num_classes):
                 matrix[int(i % num_classes), j] = float(line[j])
-
+    
+    if len(conf_matrices) == 0:
+        conf_matrices.append(matrix)
 
     return conf_matrices
 

@@ -6,6 +6,23 @@ import cnn_setups as cnns
 import utilities as utils
 from utilities.constants import *
 
+def save_train_accuracy(args, outputs, labels):
+    # Get probabilities
+    prob = torch.exp(outputs).cpu().detach().numpy()
+    # Normalise
+    prob = prob / np.reshape(np.sum(prob, axis=1), (-1, 1))
+
+    # Save prediction from max probability
+    index_of_max_prob = np.argmax(prob, axis=1)
+    # Get predictions
+    predictions = list(index_of_max_prob)
+
+    # Get confusion matrix
+    conf_matrix = skl_metrics.confusion_matrix(labels, predictions)
+    conf_matrix = conf_matrix/np.sum(np.sum(conf_matrix))
+    utils.save_conf_matrix(args, conf_matrix, data_set='train')
+
+
 def test_cnn(cnn, args, dataloader=None, get_proba=False, data_set='val'):
     print(f'Get predictions on {data_set} data')
     
