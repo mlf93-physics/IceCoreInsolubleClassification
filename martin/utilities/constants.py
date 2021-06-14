@@ -20,8 +20,8 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 TIME_STAMP = time.gmtime()
 TIME_STAMP = time.strftime("%Y-%m-%d_%H-%M-%S", TIME_STAMP)
 
-IMAGE_WIDTH = 256
-IMAGE_HEIGHT = 256
+IMAGE_WIDTH = 128
+IMAGE_HEIGHT = 128
 
 # Classes: 'camp', 'corylus', 'dust', 'grim', 'qrob', 'qsub'
 CLASSES = np.array([1, 2, 3, 4, 5, 6])
