@@ -25,9 +25,13 @@ def history_figure(args):
     plt.figure(figsize=(5, 3), constrained_layout=True)
     for i in range(len(headers)):
         print('headers[i]', headers[i])
-        # if 'train' in headers[i][1]:
-        #     values[i] = np.array(values[i])
-        #     headers[i][1] += ' (x10)'
+        if 'train' in headers[i][1]:
+            values[i] = np.array(values[i])*64
+            # headers[i][1] += ' (x10)'
+        else:
+            values[i] = np.array(values[i])*20403
+
+
         plt.plot(indices[i], values[i], label=f'{headers[i][1]}')
 
     plt.xlabel('Epoch')

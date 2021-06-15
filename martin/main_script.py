@@ -94,7 +94,7 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
                 print('Epoch: %d, Batch: %5d, Running_train_loss: %.2e' %
                     (epoch + 1, i + 1, running_train_loss / ((i + 1)*args["batch_size"])))
 
-        train_loss_list.append(running_train_loss / ((i + 1)*args["batch_size"]))
+        train_loss_list.append(running_train_loss / (i + 1))
         train_loss_index_list.append(epoch)
         
         # Save train proba
@@ -108,7 +108,7 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
                 get_proba=True, data_set='val')
         
         val_loss = criterion(val_output, val_truth)
-        val_loss_list.append(val_loss / (val_output.shape[0]))
+        val_loss_list.append(val_loss)
         val_loss_index_list.append(epoch)
 
         early_stopping_instance(val_loss, t_cnn)
