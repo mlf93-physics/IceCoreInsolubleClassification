@@ -106,9 +106,9 @@ def run_torch_CNN(args, train_dataloader=None, val_dataloader=None,
             # Predict on validation set
             val_output, val_truth = test.test_cnn(t_cnn, args, dataloader=val_dataloader,
                 get_proba=True, data_set='val')
-
+        
         val_loss = criterion(val_output, val_truth)
-        val_loss_list.append(val_loss)
+        val_loss_list.append(val_loss / (val_output.shape[0]))
         val_loss_index_list.append(epoch)
 
         early_stopping_instance(val_loss, t_cnn)
